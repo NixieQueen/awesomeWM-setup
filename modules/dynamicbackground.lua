@@ -172,6 +172,14 @@ local update_background = function()
 	end
 end
 
+local function screen_fetch()
+	background_config.current_background = ""
+	update_background()
+end
+
+awesome.connect_signal("module::dynamic_background:screen_refresh", screen_fetch)
+awesome.connect_signal("module::dynamic_background:update", update_background)
+
 --change_background('afternoon')
 update_background()
 gears.timer {

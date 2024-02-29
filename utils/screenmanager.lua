@@ -54,6 +54,7 @@ local function read_screen_data()
     [[xrandr | grep "connected" | awk '{printf "%s-%s-%s\n", $1, $2, $3}']],
     function(stdout)
       if not (stdout == recent_read) then
+        naughty.notification({text="nya"})
         recent_read = stdout
         local newrecent_screens = {}
         local disrecent_screens = {}
