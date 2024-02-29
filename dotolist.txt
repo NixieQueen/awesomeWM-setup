@@ -1,0 +1,7 @@
+Super awesome todo-list! This is like very important I guess
+1. Config! (/configs/config.lua)
+#2. Alttab! (/modules/alttab.lua) #nearly done, just gotta get the cycle and raise to work. -- Actually did it!!! Hell yeah
+#3. Dynamic background (/modules/dynamicbackground.lua) here's some ideas: optimize gif container, not exactly needed but would be nice for huge gifs. Also maybe write a new gif container which prepares a gears.wallpaper surface instead of wibox.widget. This could help enormously with current gif problems!! :3c
+#4. Taskbar (/modules/taskbar.lua) -- Done!!
+#5. Time module on left panel :3c. -- Fixed, but consider changing for better aesthetic
+6. Arrow key navigation & enter runs program. Right click opens context menu - menu should include autostart option (/modules/applauncher.lua)

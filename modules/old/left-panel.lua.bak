@@ -1,0 +1,454 @@
+-- cool left panel module!
+local wibox = require('wibox')
+local awful = require('awful')
+local gears = require('gears')
+local config_dir = gears.filesystem.get_configuration_dir()
+local beautiful = require('beautiful')
+local icons = beautiful.icons
+local dpi = beautiful.xresources.apply_dpi
+--local bars = dofile(config_dir .. "/widgets/bar.lua")
+local bars = dofile(config_dir .. "/widgets/arcbar.lua")
+local clickable_container = dofile(config_dir .. "/widgets/clickable-container.lua")
+
+local naughty = require("naughty")
+
+-- defining bars first
+local cpu_bar = bars(
+	icons.cpu,
+	'Cpu',
+	[[sh -c "echo $(top -b -n 1 | grep Cpu | awk '{print 100-$8-$16}')"]],
+	[[sh -c "echo $(grep 'cpu MHz' /proc/cpuinfo | awk '{ghzsum+=$NF+0} END {printf "%.1f Ghz", ghzsum/NR/1000}')"]],
+	dpi(50),
+	dpi(200),
+	'#3ffa2a',
+	'#1f8014'
+)
+
+local temp_bar = bars(
+	icons.temperature,
+	'Temps',
+	--[[sh -c "echo $(sensors | grep -m 1 Package\ id\ 0 | awk '{printf "%.0f", $4}')"]]
+	--[[sh -c "echo $(sensors | grep -m 1 Package\ id\ 0 | awk '{printf "%.0fC", $4}')"]]
+	[[sh -c "echo $(cat /sys/class/thermal/thermal_zone*/temp | awk 'BEGIN{a=  0}{if ($1>0+a) a=$1} END{printf "%.1f", a/1000}')"]],
+	[[sh -c "echo $(cat /sys/class/thermal/thermal_zone*/temp | awk 'BEGIN{a=  0}{if ($1>0+a) a=$1} END{printf "%.1fC", a/1000}')"]],
+	dpi(50),
+	dpi(200),
+	'#fa3f2a',
+	'#701a11'
+)
+
+local bat_bar = bars(
+	icons.battery,
+	'Battery',
+	[[sh -c "echo $(upower -d | grep -m 1 percentage: | awk '{print substr($2, 1, length($2)-1)}')"]],
+	[[sh -c "echo $(upower -d | grep -m 1 time\ to | awk '{print $4" "$5}')"]],
+	dpi(50),
+	dpi(200),
+	'#fae22a',
+	'#6e6310'
+)
+
+local mem_bar = bars(
+	icons.memory,
+	'Memory',
+	[[sh -c "echo $(free | grep Mem | awk '{print $3 / $2 * 100}')"]],
+	[[sh -c "echo $(free | grep Mem | awk '{printf "%.1f GB / %.1f GB", ($2-$7)/1000000-0.4, $2/1000000-0.4}')"]],
+	dpi(50),
+	dpi(200),
+	'#2afafa',
+	'#126969'
+)
+
+local disk_bar = bars(
+	icons.disk,
+	'Disk',
+	[[sh -c "echo $(df -h / | grep / | awk '{printf "%.1f", $3/$2*100}')"]],
+	[[sh -c "echo $(df -h / | grep / | awk '{printf "%.1fG free", $4}')"]],
+	dpi(50),
+	dpi(200),
+	'#f32afa',
+	'#6b126e'
+)
+
+local battery_icon_update = function()
+	awful.spawn.easy_async_with_shell(
+		[[sh -c "echo $(upower -d | grep -m 1 state | awk '{print $2}')"]], function(stdout)
+		local state = stdout:match('[^\n]*')
+		if state == 'discharging' then
+			bat_bar:emit_signal("widget::bar:discharge_icon")
+		end
+		if state == 'charging' then
+			bat_bar:emit_signal("widget::bar:charge_icon")
+		end
+	end)
+end
+
+-- profile name & profile picture!
+local profile_name = wibox.widget {
+	markup = '$USER',
+	font = beautiful.exit_name_font,
+	align = 'center',
+	valign = 'center',
+	widget = wibox.widget.textbox
+}
+
+local profile_picture = wibox.widget {
+	{
+		id = 'profile_image',
+		image = beautiful.profile_pic,
+		resize = true,
+		widget = wibox.widget.imagebox,
+	},
+	shape = gears.shape.circle,
+	shape_border_width = beautiful.border_width * 3,
+	shape_border_color = beautiful.border_color_active,
+	forced_height = dpi(150),
+	forced_width = dpi(150),
+	widget = wibox.container.background,
+}
+
+local update_profile_pic = function()
+	awful.spawn.easy_async_with_shell(
+		[[sh -c "$HOME/.config/awesome/utils/update-profile"]],
+		function(stdout)
+			profile_picture.profile_image:set_image(stdout:match('[^\n]*'))
+			profile_picture.profile_image:emit_signal('widget::redraw_needed')
+		end
+	)
+end
+
+local update_profile_name = function()
+	awful.spawn.easy_async_with_shell(
+		[[sh -c 'printf "$(whoami)"']],
+		function(stdout)
+			profile_name:set_markup(stdout:sub(1,1):upper()..stdout:sub(2))
+			profile_name:emit_signal('widget::redraw_needed')
+		end)
+end
+
+update_profile_pic()
+update_profile_name()
+
+-- function for buttons in main menu!
+local build_function_button = function(name, icon, callback)
+	local function_button_label= wibox.widget {
+		text = name,
+		font = beautiful.exit_power_font,
+		align = 'center',
+		valign = 'center',
+		widget = wibox.widget.textbox
+	}
+
+	local function_button = wibox.widget {
+		{
+			{
+				{
+					{
+						image = icon,
+						widget = wibox.widget.imagebox
+					},
+					margins = dpi(16),
+					widget = wibox.container.margin
+				},
+				bg = beautiful.groups_bg,
+				widget = wibox.container.background
+			},
+			shape = gears.shape.rounded_rect,
+			forced_width = dpi(80),
+			forced_height = dpi(80),
+			widget = clickable_container
+		},
+		left = dpi(2),
+		right = dpi(2),
+		widget = wibox.container.margin
+	}
+
+	local left_panel_item = wibox.widget {
+		layout = wibox.layout.fixed.vertical,
+		spacing = dpi(5),
+		function_button
+	}
+
+	left_panel_item:connect_signal(
+		'button::release',
+		function()
+			callback()
+		end
+	)
+	return left_panel_item
+end
+
+-- buttons
+local quitmenu_function = function() awful.screen.focused().left_panel_grabber:stop() awesome.emit_signal("module::left_panel:hide") awesome.emit_signal("module::exit_screen:show") end
+local lockmenu_function = function() awful.screen.focused().left_panel_grabber:stop() awesome.emit_signal("module::left_panel:hide") awesome.emit_signal("module::lockscreen:show") end
+
+local quitmenu_button = build_function_button('Q', icons.shutdown, quitmenu_function)
+local lockmenu_button = build_function_button('L', icons.lock, lockmenu_function)
+
+-- search bar creator!
+local search_bar_creator = function()
+	local search_bar_text = wibox.widget {
+		text = 'Search...',
+		font = beautiful.search_bar_font,
+		align = 'center',
+		valign = 'center',
+		widget = wibox.widget.textbox
+	}
+	
+	local search_bar_label = wibox.widget {
+		text = '',
+		font = beautiful.search_bar_font,
+		align = 'center',
+		valign = 'center',
+		widget = wibox.widget.textbox
+	}
+
+	local search_bar = wibox.widget {
+		{
+			{
+				{
+					{
+						widget = wibox.layout.fixed.horizontal,
+						spacing = dpi(9),
+						search_bar_label,
+						search_bar_text,
+					},
+					left = dpi(15),
+					widget = wibox.container.margin
+				},
+				bg = '#61AFEFFF',
+				fg = '#000000',
+				widget = wibox.container.background
+			},
+			shape = function(cr, width, height)
+				gears.shape.rounded_rect(cr, width, height, dpi(30))
+			end,
+			forced_width = dpi(50),
+			forced_height = dpi(45),
+			widget = clickable_container
+		},
+		left = dpi(2),
+		right = dpi(2),
+		widget = wibox.container.margin
+	}
+
+	local search_bar_item = wibox.widget {
+		layout = wibox.layout.fixed.vertical,
+		spacing = dpi(5),
+		search_bar,
+	}
+
+	search_bar_item:connect_signal(
+		'button::release',
+		function()
+			awful.screen.focused().left_panel_grabber:stop()
+			awful.spawn.with_line_callback("rofi -show drun -theme ~/.config/awesome/rofi/launcher/rofi.rasi", {
+				exit = function() awful.screen.focused().left_panel_grabber:start() end
+			})
+		end
+	)
+	return search_bar_item
+end
+
+local search_bar = search_bar_creator()
+
+-- setting up some clock stuff
+local clock_format = '<span font="' .. beautiful.left_panel_clock_font .. '">%H:%M:%S</span>'
+local time = wibox.widget.textclock(clock_format, 1)
+
+-- left panel setup
+local create_left_panel = function(s)
+	s.left_panel = wibox {
+		screen = s,
+		visible = false,
+		ontop = true,
+		type = 'splash',
+		width = s.geometry.width/4,
+		height = s.geometry.height,
+		--bg = beautiful.tab_menu_background .. '95',
+		bg = beautiful.background,
+		fg = beautiful.fg_normal
+	}
+	--s.left_panel = awful.popup {
+	--	widget = {},
+	--	screen = s,
+	--	visible = false,
+	--	ontop = true,
+	--	type = 'notification',
+	--	width = s.geometry.width/3,
+	--	height = s.geometry.height,
+	--	forced_width = s.geometry.width/3,
+	--	forced_height = s.geometry.height,
+	--	bg = beautiful.tab_menu_background,
+	--	fg = beautiful.fg_normal,
+	--	preferred_anchors = 'middle',
+	--	preferred_positions = {'left', 'right', 'top', 'bottom'}
+	--}
+	
+	s.left_panel:buttons(
+		gears.table.join(
+			awful.button(
+				{}, 2, function()
+					awesome.emit_signal("module::left_panel:hide")
+					s.left_panel_grabber:stop()
+				end),
+			awful.button(
+				{}, 3, function()
+					s.left_panel_grabber:stop()
+					awesome.emit_signal("module::left_panel:hide")
+				end)
+		)
+	)
+	s.left_panel : setup {
+		top = dpi(50),
+		bottom = dpi(50),
+		left = dpi(60),
+		right = dpi(60),
+		layout = wibox.container.margin,
+		{
+			{
+				layout = wibox.layout.fixed.horizontal,
+				spacing = dpi(10),
+				profile_picture,
+				{
+					layout = wibox.layout.flex.vertical,
+					profile_name,
+					{
+						layout = wibox.layout.align.horizontal,
+						expand = 'none',
+						nil,
+						time,
+						nil,
+					},
+				},
+			},
+			{
+				widget = wibox.container.margin,
+				margins = dpi(20),
+				search_bar,
+			},
+			{
+				layout = wibox.layout.align.horizontal,
+				expand = 'none',
+				nil,
+				{
+					layout = wibox.layout.flex.horizontal,
+					spacing = dpi(15),
+					cpu_bar,
+					temp_bar,
+					mem_bar,
+					bat_bar,
+					disk_bar,
+				},
+				nil,
+			},
+			{
+				{
+					layout = wibox.layout.fixed.horizontal,
+					spacing = dpi(5),
+					quitmenu_button,
+					lockmenu_button,
+					quitmenu_button,
+					quitmenu_button,
+					quitmenu_button,
+				},
+				{
+					layout = wibox.layout.fixed.horizontal,
+					spacing = dpi(5),
+					quitmenu_button,
+					quitmenu_button,
+					quitmenu_button,
+					quitmenu_button,
+					quitmenu_button,
+				},
+				layout = wibox.layout.fixed.vertical,
+				spacing = dpi(5),
+			},
+			layout = wibox.layout.fixed.vertical,
+			spacing = dpi(100),
+		},
+	}
+	
+	--awful.placement.left(
+	--	s.left_panel,
+	--	{
+	--		margins = { 
+	--			left = 0,
+	--			right = 0,
+	--			top = 0,
+	--			bottom = 0,
+	--		},
+	--		honor_workarea = true
+	--	}
+	--)
+	
+	local cpu_timer = gears.timer {timeout = .1, autostart = false, single_shot=true, callback = function() cpu_bar:emit_signal("widget::bar:refresh") end}
+	local temp_timer = gears.timer {timeout = 1, autostart = false, single_shot=true, callback = function() temp_bar:emit_signal("widget::bar:refresh") end}
+	local mem_timer = gears.timer {timeout = 2, autostart = false, single_shot=true, callback = function() mem_bar:emit_signal("widget::bar:refresh") end}
+	local bat_timer = gears.timer {timeout = 3, autostart = false, single_shot=true, callback = function() bat_bar:emit_signal("widget::bar:refresh") battery_icon_update() end}
+	local disk_timer = gears.timer {timeout = 4, autostart = false, single_shot=true, callback = function() disk_bar:emit_signal("widget::bar:refresh") end}
+	
+	s.restart_leftpanel_timers = function()
+		cpu_timer:again()
+		temp_timer:again()
+		mem_timer:again()
+		bat_timer:again()
+		disk_timer:again()
+	end
+
+	s.left_panel_bartimer = gears.timer {
+		autostart = false,
+		call_now = true,
+		timeout = 5,
+		callback = s.restart_leftpanel_timers
+	}
+	
+	s.left_panel_grabber = awful.keygrabber {
+		auto_start = false,
+		stop_event = 'release',
+		mask_event_callback = true,
+		keybindings = {
+			awful.key {
+				modifiers = {},
+				key = 'Escape',
+				on_press = function(self)
+					self:stop()
+					awesome.emit_signal("module::left_panel:hide")
+				end
+			},
+		},
+		keypressed_callback = function(self, mod, key, command)
+			if key == 'q' then
+				quitmenu_function()
+			end
+			if key == 'l' then
+				lockmenu_function()
+			end
+		end
+	}
+	
+end
+
+screen.connect_signal("request::desktop_decoration", function(s)
+	create_left_panel(s)
+end)
+
+awesome.connect_signal("module::left_panel:show", function()
+	for s in screen do
+		s.left_panel.visible = false
+		s.left_panel_bartimer:stop()
+	end
+	local focused = awful.screen.focused()
+	focused.left_panel.visible = true
+	focused.left_panel_bartimer:again()
+	focused.restart_leftpanel_timers()
+	focused.left_panel_grabber:start()
+end)
+
+awesome.connect_signal("module::left_panel:hide", function()
+	for s in screen do
+		s.left_panel.visible = false
+		s.left_panel_bartimer:stop()
+	end
+end)
+

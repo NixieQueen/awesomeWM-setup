@@ -1,0 +1,5 @@
+1: neko-theme . #a026de
+1: nixie-theme . #e663e3
+1: cotton-theme . #e6be8a
+1: cat-theme . #c77d34
+default: neko-theme
