@@ -1,6 +1,7 @@
 -- Start the AwesomeWM!!! :3
 pcall(require, "luarocks.loader")
 
+-- owO
 -- Standard lua stuff
 gears = require("gears")
 naughty = require("naughty")
