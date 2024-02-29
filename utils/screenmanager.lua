@@ -2,13 +2,25 @@
 -- I would not recommend using this in combination with arandr or similar programs.
 -- All of this is handled with xrandr
 local recent_read = ""
-local recent_screens = {}
 
-local function run_screen_command(newscreens, off_screens)
-  local command = "xrandr --output " .. newscreens[1] .. " --primary"
+local function run_screen_command(newscreens, off_screens, config)
+  local command
+  if config then
+    command = "xrandr --output " .. newscreens[1] .. " --primary --pos " .. config[1]
+  else
+    command = "xrandr --output " .. newscreens[1] .. " --primary"
+  end
   for i,newscreen in ipairs(newscreens) do
     if not (i == 1) then
-      command = command .. " --output " .. newscreen .. " --auto --right-of " .. newscreens[i-1]
+      if config then
+        if not config[i] then
+          command = command .. " --output " .. newscreen .. " --auto --right-of " .. newscreens[i-1]
+        else
+          command = command .. " --output " .. newscreen .. " --auto --pos " .. config[i]
+        end
+      else
+        command = command .. " --output " .. newscreen .. " --auto --right-of " .. newscreens[i-1]
+      end
     end
   end
 
@@ -16,6 +28,25 @@ local function run_screen_command(newscreens, off_screens)
     command = command .. " --output " .. off_screen .. " --off"
   end
   awful.spawn.easy_async_with_shell(command, function() end)
+  awesome.emit_signal("module::dynamicbackground:screen_refresh")
+end
+
+local function read_screen_setup(newscreens, off_screens, config_name)
+  local config = {}
+  local config_command = [[cat ~/.config/awesome/configs/screensetup/]] .. config_name .. [[.conf]]
+  awful.spawn.easy_async_with_shell(
+    config_command,
+    function(stdout)
+      for screenconfig in string.gmatch(stdout, "([^\n]+)") do
+        local keys = {}
+        for key in string.gmatch(screenconfig, "([^: ]+)") do
+          table.insert(keys, key)
+        end
+        table.insert(config, keys[2])
+      end
+      run_screen_command(newscreens, off_screens, config)
+    end
+  )
 end
 
 local function read_screen_data()
@@ -42,16 +73,117 @@ local function read_screen_data()
             end
           end
         end
-        recent_screens = newrecent_screens
-        run_screen_command(recent_screens, disrecent_screens)
+        read_screen_setup(newrecent_screens, disrecent_screens, "default")
       end
     end
   )
 end
 
+local function screen_widget_creator(max_width, max_height, spacing_amount)
+  local max_width = max_width or dpi(1000)
+  local max_height = max_height or dpi(300)
+  local spacing_amount = spacing or dpi(10)
+  local screencount = screen:count()
+
+  local screens_widget = wibox.widget {
+    layout = wibox.container.place,
+    {
+      id = 'screenlayout',
+      layout = wibox.layout.fixed.horizontal,
+      spacing = spacing_amount,
+    }
+  }
+
+  for s in screen do
+    local stack_screen_widget = wibox.widget {
+      layout = wibox.layout.stack,
+      {
+        widget = clickable_container
+      },
+      {
+        layout = wibox.container.place,
+        halign = "right",
+        valign = "top",
+        {
+          layout = wibox.container.margin,
+          left = dpi(10),
+          top = dpi(8),
+          right = dpi(10),
+          bottom = dpi(8),
+          {
+            layout = wibox.container.background,
+            shape = function(cr, width, height)
+              gears.shape.rounded_rect(cr, width, height, dpi(10))
+            end,
+            bg = beautiful.applauncher_index_bg,
+            fg = beautiful.applauncher_text_colour,
+            forced_width = dpi(35),
+            forced_height = dpi(50),
+            {
+              layout = wibox.container.place,
+              {
+                widget = wibox.widget.textbox,
+                markup = s.index,
+                font = beautiful.sysboldfont .. dpi(40),
+              }
+            }
+          }
+        }
+      }
+    }
+
+    local screen_widget = wibox.widget {
+      layout = wibox.container.background,
+      bg = beautiful.background,
+      border_color = beautiful.transparent,
+      border_width = dpi(5),
+      shape = function(cr, width, height)
+        gears.shape.rounded_rect(cr, width, height, dpi(20))
+      end,
+      forced_height = max_height,
+      width = math.min(max_width / screencount - spacing_amount * (screencount-1), dpi(400)),
+      stack_screen_widget,
+    }
+
+    screen_widget:connect_signal("button::press", function(self, lx, ly, button)
+      if button == 1 then
+        for _,screen_button in ipairs(screens_widget:get_children_by_id("screenlayout")[1].children) do
+          screen_button.border_color = beautiful.transparent
+        end
+        self.border_color = beautiful.applauncher_selected_field
+        selected_screen = s
+      end
+    end)
+
+    local screenshot = awful.screenshot {screen = s}
+    screenshot:refresh()
+    stack_screen_widget:insert(1,screenshot.content_widget)
+    screens_widget:get_children_by_id("screenlayout")[1]:add(screen_widget)
+  end
+  return screens_widget
+end
+
+local function screenmanager()
+  local screenmanager = awful.popup {
+    widget = {},
+    screen = screen.primary,
+    visible = true,
+    ontop = true,
+    type = 'notification',
+    width = dpi(500),
+    height = dpi(300),
+    bg = beautiful.background,
+    fg = beautiful.fg_normal,
+    placement = awful.placement.centered,
+    preferred_anchors = 'middle',
+    preferred_positions = {'left', 'right', 'top', 'bottom'}
+  }
+end
+
+awesome.connect_signal("util::screenmanager:update", read_screen_data)
+
 gears.timer {
   timeout = 1,
   autostart = true,
-  call_now = true,
-  callback = read_screen_data
+  callback = function() awesome.emit_signal("util::screenmanager:update") end
 }

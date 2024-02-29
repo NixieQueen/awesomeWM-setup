@@ -4,6 +4,22 @@
 -- Variables used for storing the selected apps and the selected screen
 local selected_apps = {}
 local selected_screen = screen[1]
+local latest_search_fetch = {}
+local search_index = {index = 0, page = 1}
+
+
+local function key_select_position()
+  latest_search_fetch.children[1].children[1].children[2].children[1].children[search_index.page]:emit_signal("button::release")
+  for _,app in ipairs(selected_apps) do
+    app.bg = beautiful.applauncher_bg_normal
+  end
+  selected_apps = {}
+  if #latest_search_fetch.children[1].children[1].children[1].children[1].children[1].children < search_index.index or search_index.index == 0 then
+    search_index.index = 1
+  end
+  table.insert(selected_apps, latest_search_fetch.children[1].children[1].children[1].children[1].children[1].children[search_index.index])
+  selected_apps[1].bg = beautiful.applauncher_selected_field
+end
 
 -- A function for constructing the app buttons
 local function build_app_button(desktopname, appname, iconname, exec)
@@ -68,6 +84,9 @@ local function build_app_button(desktopname, appname, iconname, exec)
   }
 
   template.desktopname = desktopname
+  template.exec = exec
+  template.appname = appname
+  template.iconname = iconname
 
   template:connect_signal("button::release", function(content, lx, ly, button)
     if button == 1 then
@@ -82,10 +101,10 @@ local function build_app_button(desktopname, appname, iconname, exec)
         end
       end
       if in_selected then
-        table.remove(selected_apps,placement)
+        table.remove(selected_apps, placement)
         template.bg = beautiful.applauncher_bg_normal
       else
-        table.insert(selected_apps, {desktopname = desktopname, appname = appname, exec = exec, template = template})
+        table.insert(selected_apps, template)
         template.bg = beautiful.applauncher_selected_field
       end
     elseif button == 3 then
@@ -127,7 +146,7 @@ local function grab_app_details(desktopname, grid) -- This inserts the newly cre
         app.iconname = tostring(linedetail[2])
       elseif linedetail[1] == "Exec" then
         --app.exec = tostring(linedetail[2]):gsub("%%U", string.gsub(gfs.get_xdg_config_home(),".config/",""))
-        app.exec = tostring(linedetail[2]):gsub("%%U", ""):gsub("%%u", ""):gsub("%%F", "")
+        app.exec = tostring(linedetail[2]):gsub("%%U", ""):gsub("%%u", ""):gsub("%%F", ""):gsub("%%f", "")
       end
     end
     local passed = true
@@ -436,7 +455,7 @@ local function search_button_creator()
     end,
   }
   local prompt = awful.keygrabber {
-    stop_key = {"Return"},
+    --stop_key = {"Return"},
     stop_callback = function()
       prompt_cooldown:again()
       prompt_running = false
@@ -447,13 +466,70 @@ local function search_button_creator()
     keypressed_callback = function(self, mod, key, event)
       if key == "BackSpace" then
         prompt_input = prompt_input:sub(1, -2)
+        search_index = {page = 1, index = 0}
+
       elseif key == "Escape" then
         awesome.emit_signal("module::applauncher:hide")
+
+      elseif key == "Return" then
+        for _,app in ipairs(selected_apps) do
+          awful.spawn(app.exec, {screen = selected_screen})
+        end
+        awesome.emit_signal("module::applauncher:hide")
+
+      elseif key == "Up" then
+        if not (search_index.index == 0) then
+          if search_index.index > 10 then
+            search_index.index = search_index.index - 10
+          end
+        end
+
+      elseif key == "Down" then
+        if not (search_index.index == 0) then
+          if search_index.index < 21 then
+            if #latest_search_fetch.children[1].children[1].children[1].children[1].children[1].children >= search_index.index + 10 then
+              search_index.index = search_index.index + 10
+            end
+          end
+        end
+
+      elseif key == "Left" then
+        if not (search_index.index == 0) then
+          if search_index.index % 10 == 1 then
+            if not (search_index.page == 1) then
+              search_index.page = search_index.page - 1
+              search_index.index = search_index.index + 9
+              -- switch page ^^
+            end
+          else
+            search_index.index = search_index.index - 1
+          end
+        end
+
+      elseif key == "Right" then
+        if not (search_index.index == 0) then
+          if search_index.index % 10 == 0 then
+            if not (#latest_search_fetch.children[1].children[1].children[1].children[1].children <= search_index.page) then
+              search_index.page = search_index.page + 1
+              search_index.index = search_index.index - 9
+              -- switch page ^^
+            end
+          else
+            search_index.index = search_index.index + 1
+          end
+        end
+
       elseif not (key == "Super_L" or key == "Super_R" or key == "Control_L" or key == "Control_R" or key == "Shift_L" or key == "Shift_R" or key == "Alt_L" or key == "Alt_R") then
         prompt_input = prompt_input .. key
+        search_index = {page = 1, index = 0}
       end
-      search_button.markup = prompt_input
-      prompt_cooldown:again()
+
+      if not (key == "Right" or key == "Left" or key == "Up" or key == "Down") then
+        search_button.markup = prompt_input
+        prompt_cooldown:again()
+      else
+        key_select_position()
+      end
     end
   }
 
@@ -473,16 +549,16 @@ local function search_button_creator()
     prompt_input = ""
   end)
 
-  search_button_container:connect_signal("button::release", function(self, lx, ly, button, mods)
-    if button == 1 then
-      search_button_container:emit_signal("module::applauncher:start_prompt")
-
-    elseif button == 3 then
-      search_button_container:emit_signal("module::applauncher:stop_prompt")
-      search_button_container.fg = beautiful.applauncher_search_colour_off
-      awesome.emit_signal("module::applauncher:update")
-    end
-  end)
+--  search_button_container:connect_signal("button::release", function(self, lx, ly, button, mods)
+--    if button == 1 then
+--      search_button_container:emit_signal("module::applauncher:start_prompt")
+--
+--    elseif button == 3 then
+--      search_button_container:emit_signal("module::applauncher:stop_prompt")
+--      search_button_container.fg = beautiful.applauncher_search_colour_off
+--      awesome.emit_signal("module::applauncher:update")
+--    end
+--  end)
 
   return search_button_container
 end
@@ -551,6 +627,7 @@ end
 --mouse.screen.applauncher = applauncher_creator(mouse.screen)
 
 awesome.connect_signal("module::applauncher:update", function(search_apps)
+  latest_search_fetch = search_apps or apps.apps_container
   for s in screen do
     s.applauncher : setup {
       layout = wibox.container.background,
@@ -570,7 +647,7 @@ awesome.connect_signal("module::applauncher:update", function(search_apps)
               accept_button,
             },
           },
-          search_apps or apps.apps_container
+          latest_search_fetch
         }
       }
                           }
@@ -582,6 +659,7 @@ screen.connect_signal("request::desktop_decoration", function(s)
 end)
 
 awesome.connect_signal("module::applauncher:show", function(s)
+    search_index = {page = 1, index = 0}
     for other_s in screen do
       other_s.applauncher.visible = false
     end
@@ -594,7 +672,7 @@ end)
 
 awesome.connect_signal("module::applauncher:hide", function()
     for selected_index,app in ipairs(selected_apps) do
-      app.template.bg = beautiful.applauncher_bg_normal
+      app.bg = beautiful.applauncher_bg_normal
     end
     selected_screen = screen[1]
     selected_apps = {}
