@@ -28,7 +28,7 @@ local function run_screen_command(newscreens, off_screens, config)
     command = command .. " --output " .. off_screen .. " --off"
   end
   awful.spawn.easy_async_with_shell(command, function() end)
-  awesome.emit_signal("module::dynamicbackground:screen_refresh")
+  awesome.emit_signal("module::dynamic_background:screen_refresh")
 end
 
 local function read_screen_setup(newscreens, off_screens, config_name)
@@ -51,16 +51,15 @@ end
 
 local function read_screen_data()
   awful.spawn.easy_async_with_shell(
-    [[xrandr | grep "connected" | awk '{printf "%s-%s-%s\n", $1, $2, $3}']],
+    [[xrandr | grep "connected" | awk '{printf "%s|%s|%s\n", $1, $2, $3}']],
     function(stdout)
       if not (stdout == recent_read) then
-        naughty.notification({text="nya"})
         recent_read = stdout
         local newrecent_screens = {}
         local disrecent_screens = {}
         for newscreen in string.gmatch(stdout, "([^\n]+)") do
           local newscreen_string = {}
-          for str in string.gmatch(newscreen, "([^-]+)") do
+          for str in string.gmatch(newscreen, "([^|]+)") do
             table.insert(newscreen_string, str)
           end
 

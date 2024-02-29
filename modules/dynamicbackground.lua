@@ -173,7 +173,7 @@ local update_background = function()
 end
 
 local function screen_fetch()
-	background_config.current_background = ""
+	background_config.current_background = nil
 	update_background()
 end
 
