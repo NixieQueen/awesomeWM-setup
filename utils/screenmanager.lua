@@ -52,6 +52,7 @@ end
 local function read_screen_data()
   awful.spawn.easy_async_with_shell(
     [[xrandr | grep "connected" | awk '{printf "%s|%s|%s\n", $1, $2, $3}']],
+    --[[watch -n 1 -t "xrandr | grep "connected" | awk '{printf \"%s|%s|%s\n\", \$1, \$2, \$3}'"]]
     function(stdout)
       if not (stdout == recent_read) then
         recent_read = stdout
@@ -181,9 +182,3 @@ local function screenmanager()
 end
 
 awesome.connect_signal("util::screenmanager:update", read_screen_data)
-
-gears.timer {
-  timeout = 1,
-  autostart = true,
-  callback = function() awesome.emit_signal("util::screenmanager:update") end
-}
