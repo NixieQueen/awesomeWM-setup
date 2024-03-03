@@ -45,6 +45,7 @@ local function read_screen_setup(newscreens, off_screens, config_name)
         table.insert(config, keys[2])
       end
       run_screen_command(newscreens, off_screens, config)
+      awesome.emit_signal("module::dynamic_background:screen_refresh")
     end
   )
 end
@@ -181,4 +182,4 @@ local function screenmanager()
   }
 end
 
-awesome.connect_signal("util::screenmanager:update", read_screen_data)
+awesome.connect_signal("utils::screenmanager:update", read_screen_data)
