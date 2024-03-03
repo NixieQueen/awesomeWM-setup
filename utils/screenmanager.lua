@@ -183,3 +183,4 @@ local function screenmanager()
 end
 
 awesome.connect_signal("utils::screenmanager:update", read_screen_data)
+awful.spawn.with_shell(gfs.get_configuration_dir() .. "/utils/launch_screenudev.sh")

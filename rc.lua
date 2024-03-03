@@ -77,39 +77,16 @@ require("modules.taskbar")
 require("modules.toppanel")
 require("modules.applauncher")
 require("modules.screenshottool")
+require("modules.dynamicbackground")
 
 -- Rules & Notification stuff
 require("rules")
-
--- Wallpaper!!!
--- Regular wallpaper is kinda fucky right now, use gears.wallpaper.maximized() instead
-
-require("modules.dynamicbackground")
-
---screen.connect_signal("request::wallpaper", function(s)
---	gears.wallpaper.maximized(beautiful.wallpaper.default,s)
---end)
-
---screen.emit_signal("request::wallpaper")
-
---screen.connect_signal('request::wallpaper', function(s)
---	awful.wallpaper {
---		screen = s,
---		widget = {
---			image = beautiful.wallpaper,
---			fit_property = "fit",
---			honor_padding = false,
---			widget = wibox.widget.imagebox,
---			valign = "center",
---			halign = "center",
---		}
---	}
---end)
 
 -- Apps to start at runtime! Picom compositor here \/ :3c
 -- awful.spawn.with_shell("picom")
 -- awful.util.spawn("redshift",false)
 require("utils.startup-apps")
+require("utils.screenmanager")
 
 -- for now, just start by doing this:
 --dofile(config_dir .. "start.lua")
