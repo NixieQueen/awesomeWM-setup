@@ -46,7 +46,7 @@ local taskwidget_creator = function(tasklist)
 				expand = 'none',
 				nil,
 				{
-					appicon(string.lower(task.class), true, task),
+					appicon(string.lower(task.class or task.name), true, task),
 					margins = dpi(5),
 					forced_height = dpi(80),
 					widget = wibox.container.margin,
@@ -62,7 +62,7 @@ local taskwidget_creator = function(tasklist)
 						id = 'text',
 						widget = wibox.widget.textbox,
 						font = beautiful.sysboldfont .. dpi(20),
-						markup = string.lower(task.class),
+						markup = string.lower(task.class or task.name),
 					},
 					id = 'textmargin',
 					left = dpi(2),
@@ -125,8 +125,9 @@ local taskwidget_creator = function(tasklist)
 	add_tasklist()
 
 	template:connect_signal("module::alttab:raise", function()
-		template.tasklist[template.task_index].first_tag:view_only()
-		template.tasklist[template.task_index]:activate { context = 'taskbar_raise', raise = true } end
+		raise_task = template.tasklist[template.task_index]
+		raise_task.first_tag:view_only()
+		raise_task:activate { context = 'taskbar_raise', raise = true } end
 	)
 	template:connect_signal("module::alttab:fix_bg", function()
 		template.bg = get_bg(task).task_bg end
@@ -238,10 +239,10 @@ local alttab_creator = function(s)
 		local tasklist_temp = {}
 		for _, task in ipairs(client.get()) do
 			-- Make & append task widgets
-			if tasklist_temp[task.class] then
-				table.insert(tasklist_temp[task.class], task)
+			if tasklist_temp[task.class or task.name] then
+				table.insert(tasklist_temp[task.class or task.name], task)
 			else
-				tasklist_temp[task.class] = {task}
+				tasklist_temp[task.class or task.name] = {task}
 			--table.insert(s.alttab_tasks, {task})
 			end
 		end

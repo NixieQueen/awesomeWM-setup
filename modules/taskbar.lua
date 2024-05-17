@@ -108,7 +108,7 @@ local taskwidget_creator = function(tasklist)
 				layout = wibox.container.place,
 				halign = "center",
 				{
-					appicon(string.lower(task.class), true, task),
+					appicon(string.lower(task.class or task.name), true, task),
 					margins = dpi(5),
 					forced_height = dpi(50),
 					widget = wibox.container.margin,
@@ -122,7 +122,7 @@ local taskwidget_creator = function(tasklist)
 						id = 'text',
 						widget = wibox.widget.textbox,
 						font = beautiful.sysboldfont .. dpi(14),
-						markup = string.lower(string.sub(task.class,1,9)),
+						markup = string.lower(string.sub(task.class or task.name,1,9)),
 					},
 					id = 'textmargin',
 					left = dpi(2),
@@ -136,7 +136,7 @@ local taskwidget_creator = function(tasklist)
 			layout = wibox.container.place,
 			halign = "center",
 			{
-				appicon(string.lower(task.class), true, task),
+				appicon(string.lower(task.class or task.name), true, task),
 				margins = dpi(12),
 				widget = wibox.container.margin,
 			},
@@ -234,7 +234,7 @@ local taskwidget_creator = function(tasklist)
 			template.cycle_item()
 			template:emit_signal("module::taskbar:raise")
 		elseif button == 3 then
-			awful.spawn(string.lower(task.class), {screen = mouse.screen})
+			awful.spawn(string.lower(task.class or task.name), {screen = mouse.screen})
 		end
 	end)
 
@@ -347,8 +347,8 @@ local taskbar_creator = function(s)
 		local tasklist_temp = {}
 		for _, task in ipairs(client.get()) do
 			-- Make & append task widgets
-			if (task.class and task.focusable and not task.skip_taskbar) then
-				local tasktemp_name = string.lower(task.class)
+			if ((task.class or task.name) and task.focusable and not task.skip_taskbar) then
+				local tasktemp_name = string.lower(task.class or task.name)
 				if tasklist_temp[tasktemp_name] then
 					table.insert(tasklist_temp[tasktemp_name], task)
 				else
