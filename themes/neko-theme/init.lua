@@ -14,7 +14,7 @@ local theme_overrides = function(theme)
 		-- The amount of variables here might be intimidating but fear not! You only need a few based on your config, make sure they are uncommented
 		-- This part is for time-based backgrounds
 		default = theme_dir .. "Default.jpg", -- this is a fallback, do not edit!
-		afternoon = theme_dir .. "summerVibes.jpg", -- 'afternoon' is considered the time default, uncomment only these lines in case of a non-time-based setup
+		afternoon = theme_dir .. "NixieSitting.png", -- 'afternoon' is considered the time default, uncomment only these lines in case of a non-time-based setup
 		morning = theme_dir .. "1cb5df5b733982dd158395c47d1ccb3b.png",
 		evening = theme_dir .. "MX_birthday.png",
 		night = theme_dir .. "e619ee993a02eb668b861beb7122c9ae.png",

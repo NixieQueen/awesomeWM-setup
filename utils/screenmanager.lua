@@ -27,8 +27,12 @@ local function run_screen_command(newscreens, off_screens, config)
   for i,off_screen in ipairs(off_screens) do
     command = command .. " --output " .. off_screen .. " --off"
   end
-  awful.spawn.easy_async_with_shell(command, function() end)
-  awesome.emit_signal("module::dynamic_background:screen_refresh")
+  awful.spawn.easy_async_with_shell(
+    command,
+    function()
+      awesome.emit_signal("module::dynamic_background:screen_refresh")
+    end
+  )
 end
 
 local function read_screen_setup(newscreens, off_screens, config_name)

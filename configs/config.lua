@@ -3,14 +3,14 @@
 -- For custom colours, please refer to your theme's init.lua file
 local config = {
   borders = dpi(0),
-  battery = true,
+  battery = false,
   screen_setup = 'dual',
-  gaps = dpi(6),
+  gaps = dpi(5),
   desktopicons = true,
   -- taglist refers to the layout the screen takes on, layout in order
   taglist = {2, 1},
   applauncher_name = true,
   taskbar_name = true,
-  taskbar_type = 'unity' -- Available options: unity, dock & floating
+  taskbar_type = 'dock' -- Available options: unity, dock & floating
 }
 return config
