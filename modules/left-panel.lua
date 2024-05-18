@@ -284,15 +284,23 @@ local weather = weather_widget(dpi(150), 'Leiden')
 
 -- left panel setup
 local create_left_panel = function(s)
+	height_offset = dpi(72)
+	x_offset = dpi(6)
+	if config.taskbar_type == "dock" then
+		height_offset = dpi(160)
+	elseif config.taskbar_type == "unity" then
+		x_offset = dpi(97)
+	end
+
 	s.left_panel = wibox {
 		screen = s,
 		visible = false,
 		ontop = true,
-		type = 'splash',
+		type = 'normal',
 		width = dpi(640),
-		height = s.geometry.height,
+		height = s.geometry.height-height_offset,
 		x = s.geometry.x-dpi(640),
-		y = s.geometry.y,
+		y = s.geometry.y-dpi(20),
 		--bg = beautiful.tab_menu_background .. '95',
 		bg = beautiful.background,
 		fg = beautiful.primary
@@ -426,10 +434,10 @@ local create_left_panel = function(s)
 	}
 	s.left_panel.animation = rubato.timed {
 		intro = 0.5,
-		duration = 1,
+		duration = 1.0,
 		easing = rubato.quadratic,
 		subscribed = function(pos)
-			s.left_panel.x = s.geometry.x + pos * s.left_panel.width - s.left_panel.width
+			s.left_panel.x = s.geometry.x + pos * s.left_panel.width - s.left_panel.width + pos * x_offset
 		end
 	}
 	
@@ -514,15 +522,16 @@ awesome.connect_signal("module::left_panel:show", function()
 	focused.left_panel_bartimer:again()
 	focused.restart_leftpanel_timers()
 	focused.left_panel_grabber:start()
+	focused.left_panel.y = focused.geometry.y + dpi(65)
 	focused.left_panel.animation.target = 1
 end)
 
 awesome.connect_signal("module::left_panel:hide", function()
 	for s in screen do
 		s.left_panel.animation.target = 0
-		s.left_panel.visible = false
 		s.left_panel_bartimer:stop()
 		s.left_panel_grabber:stop()
 	end
+	gears.timer.start_new(1.5, function() for s in screen do s.left_panel.visible = false end end)
 end)
 

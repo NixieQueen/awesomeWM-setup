@@ -265,46 +265,43 @@ local toppanel_creator = function(s)
     position = 'top',
     screen = s,
     height = dpi(50),
-    type = 'dock',
+    margins = {
+      top = dpi(6),
+      right = dpi(6),
+      left = dpi(6),
+    },
+    stretch = true,
+    type = 'normal',
     bg = beautiful.transparent,
     widget = {
-      layout = wibox.container.margin,
-      top = dpi(6),
-      left = dpi(6),
-      right = dpi(6),
+      layout = wibox.container.background,
+      bg = beautiful.background,
       {
-        layout = wibox.container.background,
-        bg = beautiful.background,
-        shape = function(cr, width, height)
-          gears.shape.rounded_rect(cr, width, height, dpi(13))
-        end,
+        layout = wibox.container.margin,
+        margins = dpi(2),
         {
-          layout = wibox.container.margin,
-          margins = dpi(2),
-          {
-            layout = wibox.layout.align.horizontal,
-            expand = 'none',
-            {--leftbound
-              layout = wibox.layout.fixed.horizontal,
-              spacing = dpi(5),
-              leftpanel_button,
-              bat_top_bar,
-              s.workspacelist,
-              s.toppanel_promptbox,
-            },
-            {--middlebound
-              layout = wibox.layout.fixed.horizontal,
-              clock,
-            },
-            {--rightbound
-              layout = wibox.layout.fixed.horizontal,
-              keyboardlayoutbox,
-              performance_button,
-              systray_dock,
-              layoutbox,
-              exitmenu_button,
-            },
-          }
+          layout = wibox.layout.align.horizontal,
+          expand = 'none',
+          {--leftbound
+            layout = wibox.layout.fixed.horizontal,
+            spacing = dpi(5),
+            leftpanel_button,
+            bat_top_bar,
+            s.workspacelist,
+            s.toppanel_promptbox,
+          },
+          {--middlebound
+            layout = wibox.layout.fixed.horizontal,
+            clock,
+          },
+          {--rightbound
+            layout = wibox.layout.fixed.horizontal,
+            keyboardlayoutbox,
+            performance_button,
+            systray_dock,
+            layoutbox,
+            exitmenu_button,
+          },
         }
       }
     }

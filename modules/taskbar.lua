@@ -307,7 +307,7 @@ local taskbar_creator = function(s)
 		s.taskbar = awful.wibar {
 			position = 'bottom',
 			screen = s,
-			type = 'dock',
+			type = 'splash',
 			bg = beautiful.transparent,
 			height = dpi(90),
 			widget = {}
@@ -316,9 +316,17 @@ local taskbar_creator = function(s)
 		s.taskbar = awful.wibar {
 			position = 'left',
 			screen = s,
-			type = 'dock',
+			margins = {
+				--top = dpi(20),
+				left = dpi(6),
+				bottom = dpi(6),
+			},
+			type = 'normal',
 			bg = beautiful.transparent,
 			width = dpi(85),
+			y = s.geometry.y + dpi(80),
+			height = s.geometry.height - dpi(80),
+			stretch = false,
 			widget = {}
 		}
 	end
@@ -373,14 +381,12 @@ local taskbar_creator = function(s)
 
 		if config.taskbar_type == 'unity' then
 			s.taskbar : setup {
-				layout = wibox.layout.align.horizontal,
-				expand = 'none',
-				nil,
+				widget = wibox.container.background,
+				bg = beautiful.transparent,
 				{
-					layout = wibox.container.margin,
-					left = dpi(6),
-					top = dpi(6),
-					bottom = dpi(6),
+					layout = wibox.layout.align.horizontal,
+					expand = 'none',
+					nil,
 					{
 						widget = wibox.container.background,
 						bg = beautiful.background,
@@ -394,8 +400,8 @@ local taskbar_creator = function(s)
 							s.taskbar_tasklist,
 						},
 					},
-				},
-				nil,
+					nil,
+				}
 			}
 		elseif config.taskbar_type == 'dock' then
 			s.taskbar : setup {

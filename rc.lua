@@ -78,6 +78,7 @@ require("modules.toppanel")
 require("modules.applauncher")
 require("modules.screenshottool")
 require("modules.dynamicbackground")
+--require("modules.tag-switcher")
 
 -- Rules & Notification stuff
 require("rules")

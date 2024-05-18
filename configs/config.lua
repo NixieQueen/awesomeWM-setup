@@ -11,6 +11,7 @@ local config = {
   taglist = {2, 1},
   applauncher_name = true,
   taskbar_name = true,
-  taskbar_type = 'dock' -- Available options: unity, dock & floating
+  taskbar_type = 'unity', -- Available options: unity, dock & floating
+  tag_switcher = true -- allow the 'on tag change' animation to play! This is resource intensive.
 }
 return config
