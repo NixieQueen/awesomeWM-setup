@@ -68,7 +68,6 @@ require("modules.volume-notif")
 require("modules.lockmenu")
 require("modules.alttab")
 
-require("modules.welcomescreen")
 require("modules.themeswitcher")
 require("modules.left-panel")
 require("modules.taskbar")
@@ -89,6 +88,7 @@ require("rules")
 require("utils.startup-apps")
 require("utils.screenmanager")
 
+require("modules.welcomescreen")
 -- for now, just start by doing this:
 --dofile(config_dir .. "start.lua")
 

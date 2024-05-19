@@ -85,27 +85,13 @@ screen.connect_signal("request::desktop_decoration", function(s)
 	create_welcome_screen(s)
 end)
 
+
 gif:emit_signal("widget::gif:start_loop")
 
-gears.timer {
-	timeout = .1,
-	autostart = true,
-	single_shot = true,
-	callback = function()
-		for s in screen do
-			s.welcome_screen.visible = true
-		end
+gears.timer.start_new(0.1, function()
+	for s in screen do
+		s.welcome_screen.visible = true
 	end
-}
+end)
 
-gears.timer {
-	timeout = 3,
-	autostart = true,
-	single_shot = true,
-	callback = function()
-		for s in screen do
-			s.welcome_screen.visible = false
-		end
-		gif:emit_signal("widget::gif:stop_loop")
-	end
-}
+gears.timer.start_new(5, function() for s in screen do s.welcome_screen.visible = false end gif:emit_signal("widget::gif:stop_loop") end)

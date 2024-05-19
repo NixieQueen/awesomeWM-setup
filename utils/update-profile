@@ -3,13 +3,23 @@
 # Should grab the profile picture from /var/lib/AccountsService/icons/nekoking
 # if not, return ~/.config/awesome/themes/neko-theme/profile.svg
 
-awesomeDir="${HOME}/.config/awesome/"
-profilePic="${awesomeDir}/themes/neko-theme/profile.svg"
+themesDir="${HOME}/.config/awesome/themes"
 accSerPic="/var/lib/AccountsService/icons/${USER}"
 
-if [ -f $accSerPic ];
-then
-	printf $accSerPic
+#if [ -f $accSerPic ];
+#then
+#	printf $accSerPic
+#else
+#	printf $profilePic
+#fi
+
+if [ -e "$themesDir/themeconfigs.txt" ]; then
+	themeType=$(grep default: $themesDir/themeconfigs.txt | sed 's/default: //g')
+	printf "$themesDir/$themeType/profile.svg"
 else
-	printf $profilePic
+	if [ -f $accSerPic ]; then
+		printf $accSerPic
+	else
+		printf '$themesDir/neko-theme/profile.svg'
+	fi
 fi
