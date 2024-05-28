@@ -94,4 +94,4 @@ gears.timer.start_new(0.1, function()
 	end
 end)
 
-gears.timer.start_new(5, function() for s in screen do s.welcome_screen.visible = false end gif:emit_signal("widget::gif:stop_loop") end)
+gears.timer.start_new(4, function() for s in screen do s.welcome_screen.visible = false end gif:emit_signal("widget::gif:stop_loop") end)

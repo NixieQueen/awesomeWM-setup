@@ -7,8 +7,8 @@ local bar_creator = function(icon, name, barcallback, textcallback, barsizeX, ba
 		id = 'icon',
 		image = icon,
 		resize = true,
-		forced_height = dpi(50),
-		forced_width = dpi(50),
+		forced_height = barsizeX/2,
+		forced_width = barsizeX/2,
 		align = 'center',
 		valign = 'center',
 		widget = wibox.widget.imagebox
@@ -64,7 +64,7 @@ local bar_creator = function(icon, name, barcallback, textcallback, barsizeX, ba
 			shape = gears.shape.circle,
 			bg = '#2F2F2F',
 			forced_height = barsizeY/2,
-			forced_width = barsizeX*2,
+			forced_width = barsizeX,
 			fg = beautiful.primary,
 			{
 				layout = wibox.layout.stack,
@@ -87,12 +87,21 @@ local bar_creator = function(icon, name, barcallback, textcallback, barsizeX, ba
 			},
 		},
 	}
+
+	bar.animation = rubato.timed {
+		intro = 0.5,
+		duration = 1.0,
+		easing = rubato.quadratic,
+		subscribed = function(pos)
+			progressbar.progressbar.value = pos
+		end
+	}
 	
 	bar:connect_signal("widget::bar:refresh", function()
 		-- async stuff!
 		-- first up progressbar
 		awful.spawn.easy_async_with_shell(barcallback, function(stdout)
-			progressbar.progressbar.value = tonumber(stdout)
+			bar.animation.target = tonumber(stdout)
 		end)
 		
 		-- second bartext!
@@ -101,19 +110,12 @@ local bar_creator = function(icon, name, barcallback, textcallback, barsizeX, ba
 		end)
 	end)
 	
-	bar:connect_signal("widget::bar:charge_icon", function()
-		local new_icon = gears.color.recolor_image(icons.battery_charge, beautiful.tertiary)
-		icon:set_image(new_icon)
+	bar:connect_signal("widget::bar:change_icon", function(new_icon, colour)
+		local new_bar_icon = gears.color.recolor_image(new_icon, colour)
+		icon:set_image(new_bar_icon)
 		--icon.emit_signal("widget::redraw_needed")
 	end)
-	
-	bar:connect_signal("widget::bar:discharge_icon", function()
-		local new_icon = gears.color.recolor_image(icons.battery, beautiful.tertiary)
-		icon:set_image(new_icon)
-		--icon.emit_signal("widget::redraw_needed")
-		
-	end)
-	
+
 	return bar
 end
 

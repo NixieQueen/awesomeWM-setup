@@ -66,6 +66,7 @@ local theme_overrides = function(theme)
 	theme.item_fg_focus = "#53adb5"
 	theme.item_fg_minimize = '#c553c3'
 	theme.item_client_bg = "#000000"
+	theme.profile_pic = theme_dir .. "profile.svg"
 
 	-- Global font
 	theme.sysfont = "fira sans" .. " "
@@ -82,7 +83,7 @@ local theme_overrides = function(theme)
 	theme.transparent = "#000000" .. "00"
 
 	-- This part is for the taskbar!
-	theme.taskbar_bg = "#000000" .. "50"
+	theme.taskbar_bg = "#151515" .. "50"
 	theme.taskbar_bg_minimize = theme.item_bg_minimize
 	theme.taskbar_bg_focus = theme.item_bg_focus
 	theme.taskbar_bg_normal = theme.item_bg_normal --.. "DD"
@@ -90,6 +91,12 @@ local theme_overrides = function(theme)
 	theme.taskbar_fg = theme.primary
 	theme.taskbar_fg_off = theme.primary_off
 	theme.taskbar_text_colour = theme.secondary
+
+	-- Theme for left-panel
+	theme.left_panel_bg = theme.item_bg_focus .. "50"
+	theme.left_panel_text_colour = theme.primary
+	theme.left_panel_text_colour_secondary = theme.secondary
+	theme.left_panel_profile_picture = theme.profile_pic
 
 	-- This part is for the applauncher
 	theme.applauncher_text_colour = theme.secondary
@@ -119,7 +126,6 @@ local theme_overrides = function(theme)
 	theme.screenshot_frame_color = theme.primary
 	theme.screenshot_frame_shape = function(cr, width, height) gears.shape.rounded_rect(cr, width, height, dpi(15)) end
 
-	theme.profile_pic = theme_dir .. "profile.svg"
 	theme.tab_menu_background = "#24295c" .. ""
 	theme.tab_menu_border_normal = "#242222" .. ""
 	theme.lockbackground = theme.background
