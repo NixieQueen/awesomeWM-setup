@@ -14,7 +14,7 @@ wibox = require("wibox")
 ruled = require("ruled")
 
 -- Animations library by: https://github.com/andOrlando/rubato
-rubato = require("lib.rubato")
+rubato = require("rubato")
 
 layout_dir = config_dir .. "layout/"
 widget_dir = config_dir .. "widgets/"
