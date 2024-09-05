@@ -14,7 +14,7 @@ local theme_overrides = function(theme)
 	theme.wallpaper = {
 		-- The amount of variables here might be intimidating but fear not! You only need a few based on your config, make sure they are uncommented
 		-- This part is for time-based backgrounds
-		default = background_dir .. "Default.jpg", -- this is a fallback, do not edit!
+		default = background_dir .. "CarNixieAfternoon.jpg", -- this is a fallback, do not edit!
 		afternoon = background_dir .. "CarNixieAfternoon.png", -- 'afternoon' is considered the time default, uncomment only these lines in case of a non-time-based setup
 		morning = background_dir .. "CarNixieMorning.png",
 		evening = background_dir .. "CarNixieEvening.png",
