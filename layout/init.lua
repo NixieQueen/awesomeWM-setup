@@ -25,7 +25,7 @@ end)
 
 -- handle workspaces!
 screen.connect_signal("request::desktop_decoration", function(s)
-    awful.tag({"Main","Game","Music","Art"}, s, awful.layout.layouts[1])
+    awful.tag({"Main","Game","Music","Art","Code"}, s, awful.layout.layouts[1])
 end
 )
 

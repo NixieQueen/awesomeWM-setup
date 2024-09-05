@@ -1,8 +1,5 @@
 -- Alttab setup, this is very experimental so it might break!
 -- Every time you press alt-tab it should remake the alttab menu
-
--- naughty for debugging
-local naughty = require("naughty")
 -- First set up task widget
 
 -- Get the right colour for the application
@@ -61,7 +58,7 @@ local taskwidget_creator = function(tasklist)
 					{
 						id = 'text',
 						widget = wibox.widget.textbox,
-						font = beautiful.sysboldfont .. dpi(20),
+						font = beautiful.sysboldfont .. dpi(18),
 						markup = string.lower(task.class or task.name),
 					},
 					id = 'textmargin',
@@ -147,7 +144,7 @@ local alttab_creator = function(s)
 		type = 'notification',
 		width = dpi(500),
 		height = dpi(150),
-		bg = beautiful.background,
+		bg = beautiful.alttab_bg,
 		fg = beautiful.fg_normal,
 		placement = awful.placement.centered,
 		preferred_anchors = 'middle',

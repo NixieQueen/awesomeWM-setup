@@ -44,7 +44,7 @@ local taskboot_creator = function(taskname)
 			halign = "center",
 			{
 				appicon(taskname, false, false),
-				margins = dpi(12),
+				margins = dpi(8),
 				widget = wibox.container.margin,
 			},
 		}
@@ -137,7 +137,7 @@ local taskwidget_creator = function(tasklist)
 			halign = "center",
 			{
 				appicon(string.lower(task.class or task.name), true, task),
-				margins = dpi(12),
+				margins = dpi(8),
 				widget = wibox.container.margin,
 			},
 		}
@@ -252,24 +252,6 @@ local taskbar_creator = function(s)
 	s.taskbar_items = {indexpoint = 0}
 	s.taskbar_tasks = {}
 
---	s.alttab = wibox {
---		screen = s,
---		visible = false,
---		ontop = true,
---		type = 'dock',
---		width = s.geometry.width, --dpi(500),
---		height = s.geometry.height, --dpi(150),
---		x = 0, --s.geometry.width / 2 - dpi(250),
---		y = 0, --s.geometry.height / 2 - dpi(75),
---		bg = beautiful.background,
---		fg = beautiful.fg_normal,
---		shape = function(cr, width, height)
---			gears.shape.rounded_rect(cr, width, height, dpi(20))
---		end
---	}
-
-	--s.alttab_apps = update_alttab(s)
-
 	s.bottombar = wibox.widget {
 		widget = wibox.container.background,
 		bg = beautiful.taskbar_fg,
@@ -281,13 +263,13 @@ local taskbar_creator = function(s)
 		s.taskbar = awful.popup {
 			widget = {}, -- include nothing, this is purely for functionality
 			screen = s,
-			opacity = 0,
+			opacity = 1,
 			visible = true,
-			ontop = true,
-			type = 'desktop',
+			ontop = false,
+			type = 'notification',
 			width = dpi(500),
 			height = dpi(150),
-			bg = beautiful.taskbar_background,
+			bg = beautiful.transparent,
 			fg = beautiful.taskbar_text_colour,
 			placement = awful.placement.bottom,
 			preferred_anchors = 'middle',
@@ -295,21 +277,23 @@ local taskbar_creator = function(s)
 		}
 
 		s.bottombar:connect_signal("mouse::enter", function()
-									   s.taskbar.opacity = 1
-									   s.taskbar.type = 'notification'
+									   --s.taskbar.opacity = 1
+									   s.taskbar.ontop = true
+									   --s.taskbar.type = 'notification'
 		end)
 
 		s.taskbar:connect_signal("mouse::leave", function()
-									 s.taskbar.opacity = 0
-									 s.taskbar.type = 'desktop'
+									 --s.taskbar.opacity = 0
+									 s.taskbar.ontop = false
+									 --s.taskbar.type = 'desktop'
 		end)
 	elseif config.taskbar_type == 'dock' then
 		s.taskbar = awful.wibar {
 			position = 'bottom',
 			screen = s,
 			type = 'splash',
-			bg = beautiful.transparent,
-			height = dpi(90),
+			bg = beautiful.taskbar_bg,
+			height = dpi(85),
 			widget = {}
 		}
 	elseif config.taskbar_type == 'unity' then
@@ -389,7 +373,7 @@ local taskbar_creator = function(s)
 					nil,
 					{
 						widget = wibox.container.background,
-						bg = beautiful.background,
+						bg = beautiful.taskbar_bg,
 						fg = beautiful.taskbar_text_colour,
 						shape = function(cr, width, height)
 							gears.shape.rounded_rect(cr, width, height, dpi(25))
@@ -405,37 +389,28 @@ local taskbar_creator = function(s)
 			}
 		elseif config.taskbar_type == 'dock' then
 			s.taskbar : setup {
-				widget = wibox.container.background,
-				bg = beautiful.background,
+				layout = wibox.layout.align.horizontal,
+				expand = 'none',
+				nil,
 				{
-					layout = wibox.layout.align.horizontal,
+					layout = wibox.layout.align.vertical,
 					expand = 'none',
 					nil,
 					{
-						layout = wibox.layout.align.vertical,
-						expand = 'none',
-						nil,
+						widget = wibox.container.background,
+						fg = beautiful.taskbar_text_colour,
+						shape = function(cr, width, height)
+							gears.shape.rounded_rect(cr, width, height, dpi(25))
+						end,
 						{
-							widget = wibox.container.background,
-							bg = beautiful.transparent,
-							fg = beautiful.taskbar_text_colour,
-							shape = function(cr, width, height)
-								gears.shape.rounded_rect(cr, width, height, dpi(25))
-							end,
-							{
-								layout = wibox.layout.fixed.vertical,
-								{
-									widget = wibox.container.margin,
-									margins = dpi(5),
-									s.taskbar_tasklist,
-								},
-								s.bottombar,
-							},
+							widget = wibox.container.margin,
+							margins = dpi(5),
+							s.taskbar_tasklist,
 						},
-						nil,
 					},
 					nil,
-				}
+				},
+				nil,
 			}
 		else
 			-- This is kinda stupid, might work though!
@@ -449,7 +424,7 @@ local taskbar_creator = function(s)
 					nil,
 					{
 						widget = wibox.container.background,
-						bg = beautiful.transparent,
+						bg = beautiful.taskbar_bg,
 						fg = beautiful.taskbar_text_colour,
 						shape = function(cr, width, height)
 							gears.shape.rounded_rect(cr, width, height, dpi(25))

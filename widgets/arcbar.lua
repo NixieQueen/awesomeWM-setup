@@ -17,7 +17,7 @@ local bar_creator = function(icon, name, barcallback, textcallback, barsizeX, ba
 	local name = wibox.widget {
 		id = 'name',
 		markup = name,
-		font = beautiful.sysboldfont .. dpi(15),
+		font = beautiful.sysboldfont .. dpi(13),
 		align = 'center',
 		valign = 'center',
 		widget = wibox.widget.textbox
@@ -26,7 +26,7 @@ local bar_creator = function(icon, name, barcallback, textcallback, barsizeX, ba
 	local bartext = wibox.widget {
 		id = 'bartext',
 		markup = '6.9 Ghz',
-		font = beautiful.sysboldfont .. dpi(15),
+		font = beautiful.sysboldfont .. dpi(13),
 		align = 'center',
 		valign = 'center',
 		widget = wibox.widget.textbox
@@ -57,33 +57,36 @@ local bar_creator = function(icon, name, barcallback, textcallback, barsizeX, ba
 	}
 	
 	bar : setup {
-		layout = wibox.layout.fixed.vertical,
-		spacing = dpi(5),
-		{	
-			layout = wibox.container.background,
-			shape = gears.shape.circle,
-			bg = '#2F2F2F',
-			forced_height = barsizeY/2,
-			forced_width = barsizeX,
-			fg = beautiful.primary,
-			{
-				layout = wibox.layout.stack,
-				progressbar,
-				{
-					icon,
-					widget = wibox.container.margin,
-					margins = dpi(15),
-				},
-			},
-		},
+		layout = wibox.container.background,
+		forced_height = barsizeY,
+		forced_width = barsizeX,
 		{
 			layout = wibox.layout.fixed.vertical,
 			spacing = dpi(5),
-			name,
 			{
-				widget = wibox.container.background,
-				fg = color,
-				bartext,
+				layout = wibox.container.background,
+				shape = gears.shape.circle,
+				bg = beautiful.arc_bar_bg,
+				fg = beautiful.primary,
+				{
+					layout = wibox.layout.stack,
+					progressbar,
+					{
+						icon,
+						widget = wibox.container.margin,
+						margins = dpi(15),
+					},
+				},
+			},
+			{
+				layout = wibox.layout.fixed.vertical,
+				spacing = dpi(5),
+				name,
+				{
+					widget = wibox.container.background,
+					fg = color,
+					bartext,
+				},
 			},
 		},
 	}

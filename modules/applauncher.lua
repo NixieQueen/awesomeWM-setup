@@ -108,7 +108,7 @@ local function build_app_button(desktopname, appname, iconname, exec)
         template.bg = beautiful.applauncher_selected_field
       end
     elseif button == 3 then
-      awful.spawn(exec, {screen = selected_screen, role="nya"})
+      awful.spawn.with_shell(exec, {screen = selected_screen, role="nya"})
       awesome.emit_signal("module::applauncher:hide")
       --awful.spawn.with_shell(exec)
       --template:activate{context='applauncher', action='mouse_move'}
@@ -137,16 +137,19 @@ local function grab_app_details(desktopname, grid) -- This inserts the newly cre
       for line_type in string.gmatch(line, "([^=]+)") do
         table.insert(linedetail, line_type)
       end
+      keydetail = linedetail[1]
+      linedetail[1] = ""
+      valuedetail = table.concat(linedetail,"="):sub(2)
       if not (app.appname == 'nil' or app.iconname == 'nil' or app.exec == 'nil') then
         break
       end
-      if linedetail[1] == "Name" then
-        app.appname = tostring(linedetail[2])
-      elseif linedetail[1] == "Icon" then
-        app.iconname = tostring(linedetail[2])
-      elseif linedetail[1] == "Exec" then
-        --app.exec = tostring(linedetail[2]):gsub("%%U", string.gsub(gfs.get_xdg_config_home(),".config/",""))
-        app.exec = tostring(linedetail[2]):gsub("%%U", ""):gsub("%%u", ""):gsub("%%F", ""):gsub("%%f", "")
+      if keydetail == "Name" then
+        app.appname = tostring(valuedetail)
+      elseif keydetail == "Icon" then
+        app.iconname = tostring(valuedetail)
+      elseif keydetail == "Exec" then
+        --app.exec = tostring(valuedetail):gsub("%%U", string.gsub(gfs.get_xdg_config_home(),".config/",""))
+        app.exec = tostring(valuedetail):gsub("%%U", ""):gsub("%%u", ""):gsub("%%F", ""):gsub("%%f", "")
       end
     end
     local passed = true
@@ -320,7 +323,7 @@ local function generate_apps(verify, searchterm)
         current_grid:add(foundapp)
       end
     end
-  )
+  ) 
   return {apps_container = apps_container, apps = all_apps}
 end
 
@@ -471,9 +474,9 @@ local function search_button_creator()
       elseif key == "Escape" then
         awesome.emit_signal("module::applauncher:hide")
 
-      elseif key == "Return" then
+      elseif (key == "Return" or key == "KP_Enter") then
         for _,app in ipairs(selected_apps) do
-          awful.spawn(app.exec, {screen = selected_screen})
+          awful.spawn.with_shell(app.exec, {screen = selected_screen})
         end
         awesome.emit_signal("module::applauncher:hide")
 
@@ -594,7 +597,7 @@ local function accept_button_creator()
   accept_button:connect_signal("button::press", function(self, lx, ly, button)
     if button == 1 then
       for _,app in ipairs(selected_apps) do
-        awful.spawn(app.exec, {screen = selected_screen})
+        awful.spawn.with_shell(app.exec, {screen = selected_screen})
       end
       awesome.emit_signal("module::applauncher:hide")
     end
@@ -618,7 +621,7 @@ local function applauncher_creator(s)
     visible = false,
     screen = s,
     type = 'splash',
-    bg = beautiful.background,
+    bg = beautiful.applauncher_bg,
   }
 
   return applauncher

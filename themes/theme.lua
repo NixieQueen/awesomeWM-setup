@@ -4,7 +4,7 @@ local gears = require("gears")
 local filesystem = require('gears.filesystem')
 local theme_dir = filesystem.get_configuration_dir() .. "/themes"
 
-local default = dofile(theme_dir .. "/default-theme/init.lua")
+local default = require('themes.default-theme.init')
 -- Either use neko-theme or nixie-theme here
 -- local userTheme = dofile(theme_dir .. "/nixie-theme/init.lua")
 
@@ -13,7 +13,7 @@ local selected_theme = io.popen(theme_command):read("*all"):gsub("\n[^\n]*$", ""
 -- stdout:gsub("\n[^\n]*$", "")
 
 --selected_theme.theme = 'neko-theme'
-local userTheme = dofile(theme_dir .. "/" .. selected_theme .. "/init.lua")
+local userTheme = require('themes.' .. selected_theme .. '.init')
 
 local nekoEndTheme = {}
 gtable.crush(nekoEndTheme, default.theme)

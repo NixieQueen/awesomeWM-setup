@@ -6,6 +6,7 @@ local config_dir = gears.filesystem.get_configuration_dir()
 local config = dofile(config_dir .. "/configs/config.lua")
 
 local theme_dir = gears.filesystem.get_configuration_dir() .. 'themes/neko-theme/'
+local background_dir = theme_dir .. "backgrounds/"
 
 local theme = {}
 
@@ -13,11 +14,11 @@ local theme_overrides = function(theme)
 	theme.wallpaper = {
 		-- The amount of variables here might be intimidating but fear not! You only need a few based on your config, make sure they are uncommented
 		-- This part is for time-based backgrounds
-		default = theme_dir .. "Default.jpg", -- this is a fallback, do not edit!
-		afternoon = theme_dir .. "NixieSitting.png", -- 'afternoon' is considered the time default, uncomment only these lines in case of a non-time-based setup
-		morning = theme_dir .. "1cb5df5b733982dd158395c47d1ccb3b.png",
-		evening = theme_dir .. "MX_birthday.png",
-		night = theme_dir .. "e619ee993a02eb668b861beb7122c9ae.png",
+		default = background_dir .. "Default.jpg", -- this is a fallback, do not edit!
+		afternoon = background_dir .. "CarNixieAfternoon.png", -- 'afternoon' is considered the time default, uncomment only these lines in case of a non-time-based setup
+		morning = background_dir .. "CarNixieMorning.png",
+		evening = background_dir .. "CarNixieEvening.png",
+		night = background_dir .. "CarNixieNight.png",
 
 		-- This part is for season-based backgrounds
 		-- Anything without a prefix ('summer_') is considered summer
@@ -63,8 +64,8 @@ local theme_overrides = function(theme)
 	theme.item_bg_focus = "#111111"
 	theme.item_bg_normal = "#333333"
 	theme.item_bg_minimize = "#555555"
-	theme.item_fg_focus = "#53adb5"
-	theme.item_fg_minimize = '#c553c3'
+	theme.item_fg_focus = theme.secondary
+	theme.item_fg_minimize = theme.secondary_off
 	theme.item_client_bg = "#000000"
 	theme.profile_pic = theme_dir .. "profile.svg"
 
@@ -74,19 +75,19 @@ local theme_overrides = function(theme)
 	theme.font = theme.sysfont .. "10"
 
 	-- General awesomeWM items
-	theme.bg_normal = theme.item_bg_normal -- "#0f0f0f"
-	theme.bg_focus = theme.item_bg_focus -- '#31484a'
+	theme.bg_normal = theme.item_bg_normal
+	theme.bg_focus = theme.item_bg_focus
 	theme.fg_normal = theme.primary
-	theme.fg_focus = theme.item_fg_focus -- "#53adb5"
-	--theme.background = "#151515".. "90"
-	theme.background = "#151515" .. "90"--"30"
+	theme.fg_focus = theme.item_fg_focus
+	theme.bg = "#151515"
+	theme.background = theme.bg .. "90"
 	theme.transparent = "#000000" .. "00"
 
 	-- This part is for the taskbar!
-	theme.taskbar_bg = "#151515" .. "50"
+	theme.taskbar_bg = theme.item_bg_focus .. "50"
 	theme.taskbar_bg_minimize = theme.item_bg_minimize
 	theme.taskbar_bg_focus = theme.item_bg_focus
-	theme.taskbar_bg_normal = theme.item_bg_normal --.. "DD"
+	theme.taskbar_bg_normal = theme.transparent
 	theme.taskbar_client_bg = theme.item_client_bg
 	theme.taskbar_fg = theme.primary
 	theme.taskbar_fg_off = theme.primary_off
@@ -97,6 +98,36 @@ local theme_overrides = function(theme)
 	theme.left_panel_text_colour = theme.primary
 	theme.left_panel_text_colour_secondary = theme.secondary
 	theme.left_panel_profile_picture = theme.profile_pic
+	theme.left_panel_widget_bg = theme.item_bg_normal
+	theme.left_panel_widget_fg = theme.secondary
+	theme.left_panel_widget_bg_focus = theme.primary_off
+	theme.left_panel_widget_bg_normal = theme.primary
+	theme.left_panel_widget_text_size = dpi(15)
+	theme.left_panel_widget_text = theme.sysboldfont .. theme.left_panel_widget_text_size
+	theme.left_panel_profile_bg = background_dir .. "MountainDragon.png"
+
+	-- Theme for arcbars in left-panel
+	theme.arc_bar_bg = theme.item_bg_normal
+
+	-- Theme for music player
+	theme.music_player_bg = theme.item_bg_normal
+	theme.music_player_fg = theme.primary
+	theme.music_player_fg_off = theme.primary_off
+	theme.music_player_button_bg = theme.item_bg_normal
+	theme.music_player_title_font_size = dpi(20)
+	theme.music_player_title_font = theme.sysboldfont .. theme.music_player_title_font_size
+	theme.music_player_artist_font_size = dpi(15)
+	theme.music_player_artist_font = theme.sysboldfont .. theme.music_player_artist_font_size
+	theme.music_player_album_font_size = dpi(10)
+	theme.music_player_album_font = theme.sysboldfont .. theme.music_player_album_font_size
+
+	-- Theme for weather app
+	theme.weather_app_bg = theme.item_bg_normal
+	theme.weather_app_fg_primary = theme.primary
+	theme.weather_app_fg_secondary = theme.secondary
+	theme.weather_app_fg_tertiary = theme.tertiary
+	theme.weather_app_fg_quaternary = theme.quaternary
+	theme.weather_app_fg_quinary = theme.quinary
 
 	-- This part is for the applauncher
 	theme.applauncher_text_colour = theme.secondary
@@ -107,6 +138,9 @@ local theme_overrides = function(theme)
 	theme.applauncher_selected_field = theme.primary
 
 	-- Toppanel!
+	theme.toppanel_bg = theme.item_bg_focus .. "50"
+	theme.toppanel_app_fg = theme.primary
+	theme.toppanel_app_fg_off = theme.primary_off
 	theme.keyboardlayoutwidget_font_size = dpi(15)
 	theme.keyboardlayoutwidget_font = theme.sysboldfont .. theme.keyboardlayoutwidget_font_size
 
@@ -130,15 +164,14 @@ local theme_overrides = function(theme)
 	theme.tab_menu_border_normal = "#242222" .. ""
 	theme.lockbackground = theme.background
 
-	theme.bg_calendar = "#151515" .. "80"
+	theme.bg_calendar = theme.item_bg_focus .. "80"
+	theme.calendar_font_size = dpi(25)
+	theme.calendar_font = theme.sysboldfont .. theme.calendar_font_size
 
 	theme.bg_systray = "#09090900"
 	theme.systray_icon_spacing = dpi(1)
 	theme.systray_max_rows = 2
 --	theme.systray_skip_bg = true
-
-	theme.calendar_font_size = dpi(25)
-	theme.calendar_font = theme.sysboldfont .. theme.calendar_font_size
 
 	theme.alttab_bg_focus = theme.item_bg_focus
 	theme.alttab_bg_normal = theme.item_bg_normal
@@ -235,11 +268,27 @@ local theme_overrides = function(theme)
 	theme.icons.battery = theme.icon_path .. "battery-discharge.svg"
 	theme.icons.battery_charge = theme.icon_path .. "battery-charge.svg"
 
+	-- weather icons
 	theme.icons.sun = theme.icon_path .. "sun.svg"
 	theme.icons.moon = theme.icon_path .. "moon.svg"
+	theme.icons.cloudy = theme.icon_path .. "cloudy.svg"
+	theme.icons.fog = theme.icon_path .. "fog.svg"
+	theme.icons.rain = theme.icon_path .. "rain.svg"
+	theme.icons.thunderstorm = theme.icon_path .. "thunderstorm.svg"
+	theme.icons.snow = theme.icon_path .. "snow.svg"
 
 	theme.icons.terminal = theme.icon_path .. "terminal.svg"
 	theme.icons.folder = theme.icon_path .. "folder.svg"
+
+	-- left panel icons
+	theme.icons.option_arrow = theme.icons.logout
+	theme.icons.picom = theme.icons.cpu
+
+	-- music player icons
+	theme.icons.play_button = theme.icons.logout
+	theme.icons.pause_button = theme.icons.memory
+	theme.icons.previous_button = theme.icons.logout
+	theme.icons.next_button = theme.icons.logout
 
 	theme.icons.brightness = theme.icon_path .. "brightness.svg"
 	theme.icons.welcomegif = theme.icon_path .. "welcome.gif"

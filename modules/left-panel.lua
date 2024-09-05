@@ -25,12 +25,11 @@ local battery_icon_update = function()
 		end
 	end)
 end
-
 local function create_profile_box()
 	-- profile name & profile picture!
 	local profile_name = wibox.widget {
 		markup = '$USER',
-		font = beautiful.sysboldfont .. dpi(45),
+		font = beautiful.sysboldfont .. dpi(35),
 		align = 'center',
 		valign = 'center',
 		widget = wibox.widget.textbox
@@ -46,8 +45,8 @@ local function create_profile_box()
 		shape = gears.shape.circle,
 		shape_border_width = beautiful.border_width * 3,
 		shape_border_color = beautiful.border_color_active,
-		width = dpi(60),
-		height = dpi(60),
+		--forced_width = dpi(90),
+		--forced_height = dpi(90),
 		widget = wibox.container.background,
 	}
 
@@ -82,7 +81,7 @@ local function create_profile_box()
 	}
 	local idle_message = wibox.widget {
 		markup = 'OwO',
-		font = beautiful.sysboldfont .. dpi(35),
+		font = beautiful.sysboldfont .. dpi(30),
 		align = 'center',
 		valign = 'center',
 		widget = wibox.widget.textbox
@@ -94,12 +93,26 @@ local function create_profile_box()
 	end
 	update_idle_message()
 
-	local profile_box = wibox.widget {
+	local profile_name_sep = wibox.widget {
+		layout = wibox.layout.ratio.vertical,
+		spacing = dpi(10),
+		profile_name,
+		{
+			layout = wibox.container.background,
+			fg = beautiful.secondary,
+			idle_message,
+		}
+	}
+	profile_name_sep:adjust_ratio(1, 0.5, 0.5)
+
+	local profile_pic_sep = wibox.widget {
 		layout = wibox.layout.ratio.horizontal,
-		spacing = dpi(5),
 		{
 			layout = wibox.container.margin,
-			margins = dpi(5),
+			top = dpi(20),
+			left = dpi(20),
+			bottom = dpi(20),
+			right = dpi(20),
 			profile_picture,
 		},
 		{
@@ -107,22 +120,37 @@ local function create_profile_box()
 			expand = 'none',
 			nil,
 			{
-				layout = wibox.layout.ratio.vertical,
-				spacing = dpi(10),
-				profile_name,
-				{
-					layout = wibox.layout.align.horizontal,
-					expand = 'none',
-					nil,
-					{
-						widget = wibox.container.background,
-						fg = beautiful.left_panel_text_colour_secondary,
-						idle_message,
-					},
-					nil,
-				},
+				layout = wibox.container.margin,
+				top = dpi(20),
+				right = dpi(20),
+				bottom = dpi(20),
+				profile_name_sep,
 			},
 			nil,
+		},
+	}
+	profile_pic_sep:adjust_ratio(1, 0.3, 0.7)
+
+	local profile_box = wibox.widget {
+		layout = wibox.container.background,
+		forced_width = dpi(700),
+		forced_height = dpi(270),
+		shape = function(cr, width, height)
+			gears.shape.rounded_rect(cr, width, height, dpi(20))
+		end,
+		{
+			layout = wibox.layout.stack,
+			{
+				widget = wibox.widget.imagebox,
+				image = beautiful.left_panel_profile_bg,
+				horizontal_fit_policy = "fit",
+				forced_width = dpi(700),
+			},
+			{
+				widget = wibox.container.background,
+				bg = beautiful.left_panel_widget_bg .. "30",
+			},
+			profile_pic_sep,
 		},
 	}
 
@@ -179,6 +207,12 @@ local build_function_button = function(name, icon, callback)
 	return left_panel_item
 end
 
+-- Music player widget!
+local music_player = music_player_widget(dpi(700), dpi(200))
+local weather_app = weather_widget(dpi(700), dpi(200), "Leiden")
+
+local picom_widget = widget_button_picom(beautiful.left_panel_widget_bg_normal, dpi(700), dpi(50), beautiful.left_panel_widget_text)
+
 -- left panel setup
 local create_left_panel = function(s)
 	local height_offset = dpi(72)
@@ -205,35 +239,88 @@ local create_left_panel = function(s)
 
 	local profile_box = create_profile_box()
 
-	local left_panel_widgets = wibox.widget {
+	local left_panel_bars = wibox.widget {
+		layout = wibox.layout.flex.horizontal,
+		spacing = dpi(30),
+		cpu_bar,
+		temp_bar,
+		bat_bar,
+		mem_bar,
+		disk_bar,
+	}
+
+	local left_panel_options = wibox.widget {
 		layout = wibox.layout.fixed.vertical,
-		spacing = dpi(50),
-		profile_box,
+		spacing = dpi(10),
 		{
 			layout = wibox.layout.flex.horizontal,
---			spacing = dpi(5),
-			cpu_bar,
-			temp_bar,
-			bat_bar,
-			mem_bar,
-			disk_bar
+			spacing = dpi(20),
+			picom_widget,
+			picom_widget,
 		},
+		{
+			layout = wibox.layout.flex.horizontal,
+			spacing = dpi(20),
+			picom_widget,
+			picom_widget,
+		}
 	}
+
+	-- local left_panel_widgets = wibox.widget {
+	-- 	layout = wibox.layout.fixed.vertical,
+	-- 	spacing = dpi(50),
+	-- 	profile_box,
+	-- 	music_player,
+	-- 	weather_app,
+	-- 	{
+	-- 		layout = wibox.layout.flex.horizontal,
+	-- 		spacing = dpi(5),
+	-- 		cpu_bar,
+	-- 		temp_bar,
+	-- 		bat_bar,
+	-- 		mem_bar,
+	-- 		disk_bar
+	-- 	},
+	-- 	picom_widget
+	-- }
 	left_panel.scrolled = 0
-	left_panel_widgets.point = {x=0,y=left_panel.scrolled}
+	--left_panel_widgets.point = {x=0,y=left_panel.scrolled}
+
+	profile_box.start_point = {x=0, y=0}
+	music_player.start_point = {x=0, y=310}
+	weather_app.start_point = {x=0, y=550}
+	left_panel_bars.start_point = {x=0, y=800}
+	left_panel_options.start_point = {x=0, y=1000}
+
+	profile_box.point = {x=0, y=0}
+	music_player.point = {x=0, y=0}
+	weather_app.point = {x=0, y=0}
+	left_panel_bars.point = {x=0, y=0}
+	left_panel_options.point = {x=0, y=0}
+
 
 	local manual_layout = wibox.widget {
 		layout = wibox.layout.manual,
-		left_panel_widgets
+		profile_box,
+		music_player,
+		weather_app,
+		left_panel_bars,
+		left_panel_options,
+		-- left_panel_widgets
 	}
 
+	local max_scroll_length = manual_layout.children[#manual_layout.children].start_point.y
+
 	left_panel.scroll = rubato.timed {
-		intro = 0.0,
-		duration = 0.1,
+		intro = 0.2,
+		duration = 0.4,
 		easing = rubato.quadratic,
 		subscribed = function(pos)
 			left_panel.scrolled = pos
-			manual_layout:move(1, {x=0, y=left_panel.scrolled})
+			for i in pairs(manual_layout.children) do
+				local widget = manual_layout.children[i]
+				manual_layout:move(i, {x=0, y=widget.start_point.y + pos})
+			end
 		end
 	}
 
@@ -256,11 +343,11 @@ local create_left_panel = function(s)
 			left_panel.x = s.geometry.x + pos * left_panel.width - left_panel.width + pos * x_offset
 		end
 	}
-	
+
 	--awful.placement.left(
 	--	s.left_panel,
 	--	{
-	--		margins = { 
+	--		margins = {
 	--			left = 0,
 	--			right = 0,
 	--			top = 0,
@@ -269,13 +356,13 @@ local create_left_panel = function(s)
 	--		honor_workarea = true
 	--	}
 	--)
-	
+
 	local cpu_timer = gears.timer {timeout = .1, autostart = false, single_shot=true, callback = function() cpu_bar:emit_signal("widget::bar:refresh") end}
 	local temp_timer = gears.timer {timeout = 1, autostart = false, single_shot=true, callback = function() temp_bar:emit_signal("widget::bar:refresh") end}
 	local mem_timer = gears.timer {timeout = 2, autostart = false, single_shot=true, callback = function() mem_bar:emit_signal("widget::bar:refresh") end}
 	local bat_timer = gears.timer {timeout = 3, autostart = false, single_shot=true, callback = function() bat_bar:emit_signal("widget::bar:refresh") if config.battery then battery_icon_update() end end}
 	local disk_timer = gears.timer {timeout = 4, autostart = false, single_shot=true, callback = function() disk_bar:emit_signal("widget::bar:refresh") end}
-	
+
 	left_panel.restart_leftpanel_timers = function()
 		cpu_timer:again()
 		temp_timer:again()
@@ -298,18 +385,18 @@ local create_left_panel = function(s)
 					awesome.emit_signal("module::left_panel:hide")
 			end),
 			awful.button(
-				{}, 5, function()
-					new_scroll_pos = left_panel.scrolled - 60
-					if new_scroll_pos < -200 then
-						new_scroll_pos = -200
+				{}, 4, function()
+					new_scroll_pos = left_panel.scrolled + 200
+					if new_scroll_pos > 0 then
+						new_scroll_pos = 0
 					end
 					left_panel.scroll.target = new_scroll_pos
 			end),
 			awful.button(
-				{}, 4, function()
-					new_scroll_pos = left_panel.scrolled + 60
-					if new_scroll_pos > 0 then
-						new_scroll_pos = 0
+				{}, 5, function()
+					new_scroll_pos = left_panel.scrolled - 200
+					if new_scroll_pos < -max_scroll_length then
+						new_scroll_pos = -max_scroll_length
 					end
 					left_panel.scroll.target = new_scroll_pos
 			end)
@@ -336,12 +423,8 @@ local create_left_panel = function(s)
 		awesome.emit_signal("module::left_panel:hide") end
 	)
 
-	left_panel:connect_signal("move::index", function()
-		manual_layout:move(1, {x=0, y=left_panel.scrolled})
-	end)
-
 	return left_panel
-	
+
 end
 
 screen.connect_signal("request::desktop_decoration", function(s)
@@ -361,6 +444,8 @@ awesome.connect_signal("module::left_panel:show", function()
 	focused.left_panel.left_panel_bartimer:again()
 	focused.left_panel.left_panel_grabber:start()
 	focused.left_panel.restart_leftpanel_timers()
+	music_player:emit_signal("widget::music_player:start_clock")
+	weather_app:emit_signal("widget::weather_app:start_clock")
 	focused.left_panel.y = focused.geometry.y + dpi(65)
 	focused.left_panel.animation.target = 1
 end)
@@ -371,6 +456,7 @@ awesome.connect_signal("module::left_panel:hide", function()
 		s.left_panel.left_panel_bartimer:stop()
 		s.left_panel.left_panel_grabber:stop()
 	end
+	music_player:emit_signal("widget::music_player:stop_clock")
+	weather_app:emit_signal("widget::weather_app:stop_clock")
 	gears.timer.start_new(1.5, function() for s in screen do if s.left_panel.animation.target <= 0.1 then s.left_panel.visible = false end end end)
 end)
-

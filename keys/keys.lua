@@ -160,6 +160,9 @@ local key_list = awful.util.table.join(
         {description='view the Music tag', group='layout'}),
     awful.key({modkey}, "4", function() awful.screen.focused().tags[4]:view_only() end,
         {description='view the Art tag', group='layout'}),
+    awful.key({modkey}, "5", function() awful.screen.focused().tags[5]:view_only() end,
+        {description='view the Coding tag', group='layout'}),
+
 
 
 	-- extra keys

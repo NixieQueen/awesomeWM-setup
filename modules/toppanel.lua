@@ -7,21 +7,21 @@ local batbar = dofile(config_dir .. "/widgets/toparcbar.lua")
 local bat_top_bar_func = function()
   if config.battery then
     return batbar(
-      gears.color.recolor_image(icons.battery, beautiful.primary),
+      gears.color.recolor_image(icons.battery, beautiful.toppanel_app_fg),
       [[sh -c "echo $(upower -d | grep -m 1 percentage: | awk '{print substr($2, 1, length($2)-1)}')"]],
       dpi(20),
       dpi(10),
-      beautiful.primary,
-      beautiful.primary_off
+      beautiful.toppanel_app_fg,
+      beautiful.toppanel_app_fg_off
     )
   else
     return batbar(
-      gears.color.recolor_image(icons.memory, beautiful.primary),
+      gears.color.recolor_image(icons.memory, beautiful.toppanel_app_fg),
       [[sh -c "echo $(nvidia-smi | grep % | awk '{print $13-1}')"]],
       dpi(20),
       dpi(20),
-      beautiful.primary,
-      beautiful.primary_off
+      beautiful.toppanel_app_fg,
+      beautiful.toppanel_app_fg_off
     )
   end
 end
@@ -86,6 +86,28 @@ local performance_switch = performance_switcher_widget()
 
 local toppanel_creator = function(s)
   -- Create every item that should be included in the panel
+  local layoutboxwidget = awful.widget.layoutbox(s)
+  layoutboxwidget:buttons(
+    gears.table.join(
+      awful.button(
+        {}, 1, function()
+          awful.layout.inc(1) end
+      ),
+      awful.button(
+        {}, 3, function()
+          awful.layout.inc(-1) end
+      ),
+      awful.button(
+        {}, 4, function()
+          awful.layout.inc(-1) end
+      ),
+      awful.button(
+        {}, 5, function()
+          awful.layout.inc(1) end
+      )
+    )
+  )
+
   local layoutbox = wibox.widget {
     shape = gears.shape.rounded_rect,
     forced_width = dpi(40),
@@ -94,28 +116,7 @@ local toppanel_creator = function(s)
     {
       widget = wibox.container.margin,
       margins = dpi(3),
-      {
-        widget = awful.widget.layoutbox,
-        screen = s,
-        buttons = {
-          awful.button(
-            {}, 1, function()
-              awful.layout.inc(1) end
-          ),
-          awful.button(
-            {}, 3, function()
-              awful.layout.inc(-1) end
-          ),
-          awful.button(
-            {}, 4, function()
-              awful.layout.inc(-1) end
-          ),
-          awful.button(
-            {}, 5, function()
-              awful.layout.inc(1) end
-          )
-        }
-      }
+      layoutboxwidget
     }
   }
 
@@ -124,25 +125,25 @@ local toppanel_creator = function(s)
   local leftpanel_function = function()
     awesome.emit_signal("module::left_panel:show")
   end
-  local leftpanel_button = button_builder(gears.color.recolor_image(icons.logout, beautiful.primary), leftpanel_function)
+  local leftpanel_button = button_builder(gears.color.recolor_image(icons.logout, beautiful.toppanel_app_fg), leftpanel_function)
 
   local exitbutton_function = function()
     awesome.emit_signal("module::exit_screen:show")
   end
-  local exitmenu_button = button_builder(gears.color.recolor_image(icons.shutdown, beautiful.primary), exitbutton_function)
+  local exitmenu_button = button_builder(gears.color.recolor_image(icons.shutdown, beautiful.toppanel_app_fg), exitbutton_function)
 
   local clock_format = '<span font="' .. beautiful.sysboldfont .. dpi(20) .. '">%a %b %H:%M:%S</span>'
 
   local calendar_widget = calendar(s)
 
-  local systray_dock = button_builder(gears.color.recolor_image(icons.cpu, beautiful.primary), systray_dock_function)
+  local systray_dock = button_builder(gears.color.recolor_image(icons.cpu, beautiful.toppanel_app_fg), systray_dock_function)
 
   local performancebutton_function = function()
     performance_switch:move_next_to(mouse.current_widget_geometry)
     performance_switch:emit_signal("widget::interactive-popup:show")
   end
 
-  local performance_button = button_builder(gears.color.recolor_image(icons.cpu, beautiful.secondary), performancebutton_function)
+  local performance_button = button_builder(gears.color.recolor_image(icons.cpu, beautiful.toppanel_app_fg), performancebutton_function)
 
   local clock = wibox.widget {
     widget = clickable_container,
@@ -192,7 +193,7 @@ local toppanel_creator = function(s)
                 margins = dpi(4),
                 widget = wibox.container.margin,
               },
-              bg = beautiful.primary_off .. "80",
+              bg = beautiful.toppanel_app_fg_off .. "80",
               shape = gears.shape.circle,
               widget = wibox.container.background,
             },
@@ -272,37 +273,33 @@ local toppanel_creator = function(s)
     },
     stretch = true,
     type = 'normal',
-    bg = beautiful.transparent,
+    bg = beautiful.toppanel_bg,
     widget = {
-      layout = wibox.container.background,
-      bg = beautiful.background,
+      layout = wibox.container.margin,
+      margins = dpi(2),
       {
-        layout = wibox.container.margin,
-        margins = dpi(2),
-        {
-          layout = wibox.layout.align.horizontal,
-          expand = 'none',
-          {--leftbound
-            layout = wibox.layout.fixed.horizontal,
-            spacing = dpi(5),
-            leftpanel_button,
-            bat_top_bar,
-            s.workspacelist,
-            s.toppanel_promptbox,
-          },
-          {--middlebound
-            layout = wibox.layout.fixed.horizontal,
-            clock,
-          },
-          {--rightbound
-            layout = wibox.layout.fixed.horizontal,
-            keyboardlayoutbox,
-            performance_button,
-            systray_dock,
-            layoutbox,
-            exitmenu_button,
-          },
-        }
+        layout = wibox.layout.align.horizontal,
+        expand = 'none',
+        {--leftbound
+          layout = wibox.layout.fixed.horizontal,
+          spacing = dpi(5),
+          leftpanel_button,
+          bat_top_bar,
+          s.workspacelist,
+          s.toppanel_promptbox,
+        },
+        {--middlebound
+          layout = wibox.layout.fixed.horizontal,
+          clock,
+        },
+        {--rightbound
+          layout = wibox.layout.fixed.horizontal,
+          keyboardlayoutbox,
+          performance_button,
+          systray_dock,
+          layoutbox,
+          exitmenu_button,
+        },
       }
     }
   }

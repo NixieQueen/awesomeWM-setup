@@ -35,7 +35,10 @@ calendar = require("widgets.calendar")
 systray = require("widgets.systray")
 interactive_popup = require("widgets.interactive-popup")
 performance_switcher_widget = require("widgets.performance-switch")
+music_player_widget = require("widgets.music-player")
 
+widget_button = require("widgets.widget-button")
+widget_button_picom = require("widgets.widget-button-picom")
 --local default_dpi = 96
 
 awful.screen.set_auto_dpi_enabled(true)
