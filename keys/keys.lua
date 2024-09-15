@@ -215,13 +215,13 @@ local key_list = awful.util.table.join(
 
 
 	awful.key({}, "XF86AudioPlay", function()
-		awful.spawn('playerctl play-pause',false) end,
+		awful.spawn('playerctl -p "spotify,%any" play-pause',false) end,
 		{description='Play/Pause current media', group='extra'}),
 	awful.key({}, "XF86AudioNext", function()
-		awful.spawn('playerctl next',false) end,
+		awful.spawn('playerctl -p "spotify,%any" next',false) end,
 		{description='Skip to the next media', group='extra'}),
 	awful.key({}, "XF86AudioPrev", function()
-		awful.spawn('playerctl previous',false) end,
+		awful.spawn('playerctl -p "spotify,%any" previous',false) end,
 		{description='Skip to previous media', group='extra'})
 )
 

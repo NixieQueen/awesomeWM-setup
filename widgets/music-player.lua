@@ -39,17 +39,17 @@ local function create_music_player(sizeX, sizeY)
   local song_length = 60
   local song_position = 0
 
-  local grab_player_info = [[playerctl status && echo $(playerctl position) && playerctl metadata]]
+  local grab_player_info = [[playerctl -p "spotify,%any" status && echo $(playerctl -p "spotify,%any" position) && playerctl -p "spotify,%any" metadata]]
 
   local play_pause_button = music_player_button(icons.play_button)
   play_pause_button:connect_signal("button::release", function(content, lx, ly, button)
     if button == 1 then
       if playing_status then
         play_pause_button.change_icon(icons.pause_button)
-        awful.spawn.with_shell("playerctl pause")
+        awful.spawn.with_shell('playerctl -p "spotify,%any" pause')
       else
         play_pause_button.change_icon(icons.play_button)
-        awful.spawn.with_shell("playerctl play")
+        awful.spawn.with_shell('playerctl -p "spotify,%any" play')
       end
       playing_status = not playing_status
     end
@@ -58,14 +58,14 @@ local function create_music_player(sizeX, sizeY)
   local previous_button = music_player_button(icons.previous_button)
   previous_button:connect_signal("button::release", function(content, lx, ly, button)
     if button == 1 then
-      awful.spawn.with_shell("playerctl previous")
+      awful.spawn.with_shell('playerctl -p "spotify,%any" previous')
     end
   end)
 
   local next_button = music_player_button(icons.next_button)
   next_button:connect_signal("button::release", function(content, lx, ly, button)
     if button == 1 then
-      awful.spawn.with_shell("playerctl next")
+      awful.spawn.with_shell('playerctl -p "spotify,%any" next')
     end
   end)
 
