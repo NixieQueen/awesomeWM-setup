@@ -119,50 +119,41 @@ end
 
 local known_names = {}
 
-local function grab_app_details(desktopname, grid) -- This inserts the newly created app in the given list
-  local file_path
-  if gfs.file_readable("/usr/share/applications/" .. desktopname) then
-    file_path = "/usr/share/applications/" .. desktopname
+local function grab_app_details(desktopfile, grid) -- This inserts the newly created app in the given list
+  local file_path = desktopfile[2] .. "/" .. desktopfile[1]
+  -- make the app details
+  local app = {appname = 'nil', iconname = 'nil', exec = 'nil'}
+  --for line in string.gmatch(stdout, "([^\n]+)") do
+  for line in io.lines(file_path) do
+    local linedetail = {}
+    for line_type in string.gmatch(line, "([^=]+)") do
+      table.insert(linedetail, line_type)
+    end
+    keydetail = linedetail[1]
+    linedetail[1] = ""
+    valuedetail = table.concat(linedetail,"="):sub(2)
+    if not (app.appname == 'nil' or app.iconname == 'nil' or app.exec == 'nil') then
+      break
+    end
+    if keydetail == "Name" then
+      app.appname = tostring(valuedetail)
+    elseif keydetail == "Icon" then
+      app.iconname = tostring(valuedetail)
+    elseif keydetail == "Exec" then
+      --app.exec = tostring(valuedetail):gsub("%%U", string.gsub(gfs.get_xdg_config_home(),".config/",""))
+      app.exec = tostring(valuedetail):gsub("%%U", ""):gsub("%%u", ""):gsub("%%F", ""):gsub("%%f", "")
+    end
   end
-  if gfs.file_readable(string.gsub(gfs.get_xdg_config_home(),".config/","") .. ".local/share/applications/" .. desktopname) then
-    file_path = string.gsub(gfs.get_xdg_config_home(),".config/","") .. ".local/share/applications/" .. desktopname
+  local passed = true
+  for _,known_app in ipairs(known_names) do
+    if known_app.appname == app.appname and known_app.iconname == app.iconname and known_app.exec == app.exec then
+      passed = false
+    end
   end
-
-  if file_path then
-    -- make the app details
-    local app = {appname = 'nil', iconname = 'nil', exec = 'nil'}
-    --for line in string.gmatch(stdout, "([^\n]+)") do
-    for line in io.lines(file_path) do
-      local linedetail = {}
-      for line_type in string.gmatch(line, "([^=]+)") do
-        table.insert(linedetail, line_type)
-      end
-      keydetail = linedetail[1]
-      linedetail[1] = ""
-      valuedetail = table.concat(linedetail,"="):sub(2)
-      if not (app.appname == 'nil' or app.iconname == 'nil' or app.exec == 'nil') then
-        break
-      end
-      if keydetail == "Name" then
-        app.appname = tostring(valuedetail)
-      elseif keydetail == "Icon" then
-        app.iconname = tostring(valuedetail)
-      elseif keydetail == "Exec" then
-        --app.exec = tostring(valuedetail):gsub("%%U", string.gsub(gfs.get_xdg_config_home(),".config/",""))
-        app.exec = tostring(valuedetail):gsub("%%U", ""):gsub("%%u", ""):gsub("%%F", ""):gsub("%%f", "")
-      end
-    end
-    local passed = true
-    for _,known_app in ipairs(known_names) do
-      if known_app.appname == app.appname and known_app.iconname == app.iconname and known_app.exec == app.exec then
-        passed = false
-      end
-    end
-    if passed then
-      table.insert(known_names, {appname = app.appname, iconname = app.iconname, exec = app.exec})
-      table.insert(grid, build_app_button(desktopname, app.appname, app.iconname, app.exec))
-      --grid:add(build_app_button(desktopname, app.appname, app.iconname, app.exec))
-    end
+  if passed then
+    table.insert(known_names, {appname = app.appname, iconname = app.iconname, exec = app.exec})
+    table.insert(grid, build_app_button(desktopfile[1], app.appname, app.iconname, app.exec))
+    --grid:add(build_app_button(desktopname, app.appname, app.iconname, app.exec))
   end
 end
 
@@ -254,9 +245,10 @@ local function generate_apps(verify, searchterm)
   local all_apps = {}
 
   awful.spawn.easy_async_with_shell(
-    "ls /usr/share/applications && ls ~/.local/share/applications",
+    [[sh -c "ls $HOME/.local/share/applications ${${XDG_DATA_DIRS}//://applications } 2>/dev/null"]],
     --"ls ~/.local/share/applications",
     function(stdout)
+      local app_path
       local desktopnames = {}
       if searchterm then
         for desktop_app in string.gmatch(stdout, "([^\n]+)") do
@@ -266,8 +258,10 @@ local function generate_apps(verify, searchterm)
           end
           if desktoptypes[#desktoptypes] == "desktop" then
             if string.find(string.lower(desktop_app), string.lower(searchterm)) then
-              table.insert(desktopnames, desktop_app)
+              table.insert(desktopnames, {desktop_app, app_path})
             end
+          elseif string.find(desktoptypes[#desktoptypes], ":") then
+            app_path = string.sub(desktop_app, 1, -2)
           end
         end
       else
@@ -277,17 +271,20 @@ local function generate_apps(verify, searchterm)
             table.insert(desktoptypes, desktoptype)
           end
           if desktoptypes[#desktoptypes] == "desktop" then
-            table.insert(desktopnames, desktop_app)
+            table.insert(desktopnames, {desktop_app, app_path})
+          elseif string.find(desktoptypes[#desktoptypes], ":") then
+            app_path = string.sub(desktop_app, 1, -2)
           end
         end
       end
+
 
       -- At this point we've figured out all the names of the desktopfiles. The next part is to find the details and build the containers
       if verify then
         for desktopindex, desktopname in ipairs(desktopnames) do
           local verifiedapp = "nil"
           for _, app in ipairs(verify) do
-            if desktopname == app.desktopname then
+            if desktopname[1] == app.desktopname then
               verifiedapp = app
               break
             end

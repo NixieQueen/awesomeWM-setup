@@ -312,8 +312,8 @@ local create_left_panel = function(s)
 	local max_scroll_length = manual_layout.children[#manual_layout.children].start_point.y
 
 	left_panel.scroll = rubato.timed {
-		intro = 0.2,
-		duration = 0.4,
+		intro = 0.15,
+		duration = 0.3,
 		easing = rubato.quadratic,
 		subscribed = function(pos)
 			left_panel.scrolled = pos
