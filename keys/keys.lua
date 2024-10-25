@@ -183,17 +183,17 @@ local key_list = awful.util.table.join(
 		awesome.emit_signal("module::brightness_osd:show",true) end,
 		{description='Turn up the brightness', group='extra'}),
 	awful.key({}, "XF86AudioLowerVolume", function()
-		awful.spawn('amixer -D pulse sset Master 1%-', false)
+		awful.spawn('amixer sset Master 1%-', false)
 		awesome.emit_signal("module::volume_osd:value")
 		awesome.emit_signal("module::volume_osd:show",true) end,
 		{description='Turn down the volume', group='extra'}),
 	awful.key({}, "XF86AudioRaiseVolume", function()
-		awful.spawn('amixer -D pulse sset Master 1%+', false)
+		awful.spawn('amixer sset Master 1%+', false)
 		awesome.emit_signal("module::volume_osd:value")
 		awesome.emit_signal("module::volume_osd:show",true) end,
 		{description='Turn up the volume', group='extra'}),
 	awful.key({}, "XF86AudioMute", function()
-		awful.spawn('amixer -D pulse sset Master 1+ toggle', false)
+		awful.spawn('amixer sset Master 1+ toggle', false)
 		awesome.emit_signal("module::volume_osd:value")
 		awesome.emit_signal("module::volume_osd:show",true) end,
 		{description='Mute the volume', group='extra'}),

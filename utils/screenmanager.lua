@@ -79,7 +79,7 @@ local function read_screen_data()
             end
           end
         end
-        read_screen_setup(newrecent_screens, disrecent_screens, "default")
+        read_screen_setup(newrecent_screens, disrecent_screens, "1mon")
       end
     end
   )

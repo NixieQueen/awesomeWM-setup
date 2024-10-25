@@ -209,7 +209,7 @@ end
 
 -- Music player widget!
 local music_player = music_player_widget(dpi(700), dpi(200))
-local weather_app = weather_widget(dpi(700), dpi(200), "Leiden")
+local weather_app = weather_widget(dpi(700), dpi(200), "Stockholm")
 
 local picom_widget = widget_button_picom(beautiful.left_panel_widget_bg_normal, dpi(700), dpi(50), beautiful.left_panel_widget_text)
 

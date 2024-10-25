@@ -94,7 +94,8 @@ ruled.client.connect_signal("request::rules", function()
         class = {
           "org.gnome.Music",
           "lollypop",
-          "amberol"
+          "amberol",
+          "spotify"
         }
       },
       properties = {
