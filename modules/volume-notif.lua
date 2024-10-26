@@ -62,7 +62,7 @@ volume_slider.stack.volume:connect_signal(
   function()
     local volume_level = volume_slider.stack.volume:get_value()
 
-    awful.spawn('amixer -D pulse sset Master ' .. volume_level .. "%", false)
+    awful.spawn('amixer sset Master ' .. volume_level .. "%", false)
     volume_value.text = "Volume: " .. volume_level .. "%"
     volume_slider.stack.progress.value = volume_level
     awesome.emit_signal("module::volume_osd:show",true)
@@ -146,13 +146,13 @@ awesome.connect_signal(
   "module::volume_osd:value",
   function()
     awful.spawn.easy_async_with_shell(
-      [[amixer -D pulse sget Master | grep 'Left: ' | awk '{print $5}']],
+      [[amixer sget Master | grep 'Left: ' | awk '{print $5}']],
       function(stdout)
         volume_slider.stack.volume.value = tonumber(string.match(stdout, "(%d?%d?%d)%%"))
       end
     )
     awful.spawn.easy_async_with_shell(
-      [[amixer -D pulse sget Master | grep 'Left: ' | awk '{print $6}']],
+      [[amixer sget Master | grep 'Left: ' | awk '{print $6}']],
       function(stdout)
         if stdout == "[off]\n" then
           volume_image.image = gears.color.recolor_image(icons.temperature, beautiful.primary_off)
