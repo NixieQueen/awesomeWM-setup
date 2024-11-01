@@ -1,6 +1,7 @@
 -- Start the AwesomeWM!!! :3
-pcall(require, "luarocks.loader")
+prerequire = require("prerequire")
 
+prerequire('luarocks.loader')
 -- owO UwU
 -- Standard lua stuff
 gears = require("gears")
@@ -12,6 +13,10 @@ gfs = require("gears.filesystem")
 config_dir = gfs.get_configuration_dir()
 wibox = require("wibox")
 ruled = require("ruled")
+
+-- Add liblua_pam to cpath
+package.cpath = package.cpath .. ";" .. "/usr/lib/lua-pam/?.so"
+pam = prerequire('liblua_pam') or prerequire('pam')
 
 -- Animations library by: https://github.com/andOrlando/rubato
 rubato = require("rubato")

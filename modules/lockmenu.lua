@@ -1,8 +1,5 @@
 -- Lock menu, covers everything and requires a password to unlock!
 
--- Add liblua_pam to cpath
-package.cpath = package.cpath .. ";" .. "/usr/lib/lua-pam/?.so"
-
 -- config stuff!
 local lockConf = {
 	clock = true,
@@ -270,7 +267,6 @@ local locker = function(s)
 			if key == 'Return' then
 				local authenticated = false
 				if input_password ~= nil then
-					local pam = require("liblua_pam")
 					authenticated = pam:auth_current_user(input_password)
 				end
 				
