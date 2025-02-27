@@ -107,7 +107,24 @@ local key_list = awful.util.table.join(
 	awful.key({modkey}, ",", function () 
 		awful.screen.focus_relative(-1) end,
 		{description='go back to previous tab in index', group='client'}),
-	
+  awful.key({modkey}, 'v', function(c)
+      local c = getC()
+      local wasfloating = c.wasfloating or false
+      if c.sticky then
+        c.sticky = false
+        c.ontop = false
+        if (not wasfloating) then
+          c.floating = false
+        end
+      else
+        c.sticky = true
+        c.ontop = true
+        c.wasfloating = c.floating
+        c.floating = true
+      end end,
+    {description='toggle a window pinned status', group='client'}),
+
+
 	-- launcher keybinds
 	awful.key({modkey}, "Return", function() 
 		awful.spawn(terminal, {screen = mouse.screen}) end,
