@@ -111,17 +111,16 @@ local key_list = awful.util.table.join(
       local c = getC()
       local wasfloating = c.wasfloating or false
       if c.sticky then
-        c.sticky = false
-        c.ontop = false
         if (not wasfloating) then
           c.floating = false
         end
       else
-        c.sticky = true
-        c.ontop = true
         c.wasfloating = c.floating
         c.floating = true
-      end end,
+      end
+      c.sticky = not c.sticky
+      c.ontop = not c.ontop
+    end,
     {description='toggle a window pinned status', group='client'}),
 
 
